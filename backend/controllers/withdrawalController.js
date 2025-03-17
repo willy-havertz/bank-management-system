@@ -1,70 +1,58 @@
 const WithdrawalPrototype = require('../prototype/withdrawal.prototype');
 
+// Utility function for error handling
+const handleError = (res, err, message) => {
+  if (!err) {
+    return res.status(500).send({ message: message || 'An unexpected error occurred.' });
+  }
+
+  if (err.kind === 'not_found') {
+    return res.status(404).send({ message: message || 'Resource not found.' });
+  }
+
+  return res.status(500).send({ message: err.message || message || 'Server error.' });
+};
+
+// Retrieve all withdrawals
 exports.findAll = (req, res) => {
-  // Retrieve all withdrawals
   WithdrawalPrototype.getAll(null, (err, data) => {
-    if (err) {
-      return res.status(500).send({
-        message: err.message || 'Some error occurred while retrieving withdrawals.',
-      });
-    }
-    return res.send(data);
+    if (err) return handleError(res, err, 'Error retrieving withdrawals.');
+    res.send(data);
   });
 };
 
+// Retrieve withdrawals by account ID
 exports.findByAccountID = (req, res) => {
-  const accountID = req.params.AccountID;
+  const accountID = req.params.accountID; // Changed to camelCase
 
-  // Validate that accountID is provided
   if (!accountID) {
-    return res.status(400).send({
-      message: 'Account ID is required.',
-    });
+    return res.status(400).send({ message: 'Account ID is required.' });
   }
 
-  // Retrieve withdrawals by accountID
   WithdrawalPrototype.findByAccountId(accountID, (err, data) => {
-    if (err) {
-      return res.status(500).send({
-        message: err.message || 'Some error occurred while retrieving withdrawals.',
-      });
-    }
-    return res.send(data);
+    if (err) return handleError(res, err, `Error retrieving withdrawals for account ${accountID}`);
+    res.send(data);
   });
 };
 
+// Create a new withdrawal
 exports.create = (req, res) => {
-  // Check if the request body is provided
-  if (!req.body || !req.body.withdrawal) {
-    return res.status(400).send({
-      message: 'Invalid content!',
-    });
-  }
+  // Destructure withdrawal details directly from request body
+  const { accountID, amount, remark } = req.body;
 
-  // Destructure withdrawal details from the request body
-  const { accountID, amount, remark } = req.body.withdrawal;
-
-  // Validate that the required fields are provided
+  // Validate required fields
   if (!accountID || !amount || !remark) {
     return res.status(400).send({
       message: 'AccountID, amount, and remark are required.',
     });
   }
 
-  // Create a withdrawal object
-  const withdrawal = {
-    accountID,
-    amount,
-    remark,
-  };
+  // Create withdrawal object
+  const withdrawal = { accountID, amount, remark };
 
-  // Create withdrawal in the database
+  // Insert into database
   WithdrawalPrototype.create(withdrawal, (err, data) => {
-    if (err) {
-      return res.status(500).send({
-        message: err.message || 'Some error occurred while creating withdrawal.',
-      });
-    }
-    return res.send(data);
+    if (err) return handleError(res, err, 'Error creating withdrawal.');
+    res.status(201).send(data);
   });
 };

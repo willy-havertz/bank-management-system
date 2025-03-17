@@ -8,106 +8,107 @@ const Account = function (account) {
   this.WCount = account.wCount;
 };
 
+// Retrieve all accounts, with optional filtering by customer ID
 Account.getAll = (customerID, req, result) => {
   let query = 'SELECT * FROM CashAccount';
 
   if (customerID) {
-    query += ` WHERE CustomerID = ${sql.escape(customerID)}`;
+    query += ' WHERE CustomerID = ?';
   }
 
-  sql.query(query, (err, res) => {
+  sql.query(query, customerID ? [customerID] : [], (err, res) => {
     if (err) {
-      console.log('Error retrieving accounts:', err);
+      console.error('Error retrieving accounts:', err);
       result({ kind: 'error', message: 'Error retrieving accounts' }, null);
       return;
     }
 
-    if (res.length) {
-      if (req.user.role === 'customer' && req.user.CustomerID !== res[0].CustomerID) {
-        console.log('No access to this account');
-        result({ kind: 'access denied', message: 'You cannot access other customers\' accounts' }, null);
-        return;
-      }
-      console.log('Found accounts: ', res);
-      result({ kind: 'success' }, res);
-    } else {
-      result({ kind: 'not_found' }, null);
+    if (!res.length) {
+      return result({ kind: 'not_found', message: 'No accounts found' }, null);
     }
+
+    // Check access control
+    if (req.user.role === 'customer' && req.user.CustomerID !== res[0].CustomerID) {
+      console.warn('Access denied: Unauthorized account access attempt');
+      return result({ kind: 'access denied', message: 'You cannot access other customers\' accounts' }, null);
+    }
+
+    console.log('Found accounts:', res);
+    return result({ kind: 'success' }, res);
   });
 };
 
+// Retrieve an account by its ID
 Account.findById = (id, req, result) => {
-  sql.query('SELECT * FROM CashAccount WHERE AccountID = ?', id, (err, res) => {
+  sql.query('SELECT * FROM CashAccount WHERE AccountID = ?', [id], (err, res) => {
     if (err) {
-      console.log('Error retrieving account by ID:', err);
-      result({ kind: 'error', message: 'Error retrieving account' }, null);
-      return;
+      console.error('Error retrieving account by ID:', err);
+      return result({ kind: 'error', message: 'Error retrieving account' }, null);
     }
 
-    if (res.length) {
-      if (req.user.role === 'customer' && req.user.CustomerID !== res[0].CustomerID) {
-        console.log('No access to this account');
-        result({ kind: 'access denied', message: 'You cannot access this account' }, null);
-        return;
-      }
-
-      console.log('Found account: ', res[0]);
-      result({ kind: 'success' }, res[0]);
-    } else {
-      result({ kind: 'not_found' }, null);
+    if (!res.length) {
+      return result({ kind: 'not_found', message: 'Account not found' }, null);
     }
+
+    // Check access control
+    if (req.user.role === 'customer' && req.user.CustomerID !== res[0].CustomerID) {
+      console.warn('Access denied: Unauthorized account access attempt');
+      return result({ kind: 'access denied', message: 'You cannot access this account' }, null);
+    }
+
+    console.log('Found account:', res[0]);
+    return result({ kind: 'success' }, res[0]);
   });
 };
 
+// Create a new account
 Account.create = (newAccount, req, result) => {
-  sql.query('SELECT WCountMax FROM CashAccountType WHERE TypeID = ?', newAccount.TypeID, (err, res) => {
+  // Role-based access control
+  if (req.user.role !== 'employee' && req.user.role !== 'admin') {
+    console.warn('Access denied: Unauthorized account creation attempt');
+    return result({ kind: 'access denied', message: 'You do not have permission to create accounts' }, null);
+  }
+
+  sql.query('SELECT WCountMax FROM CashAccountType WHERE TypeID = ?', [newAccount.TypeID], (err, res) => {
     if (err) {
-      console.log('Error retrieving WCountMax:', err);
-      result({ kind: 'error', message: 'Error retrieving withdrawal count max' }, null);
-      return;
+      console.error('Error retrieving WCountMax:', err);
+      return result({ kind: 'error', message: 'Error retrieving withdrawal count max' }, null);
+    }
+
+    // Check if WCountMax exists
+    if (!res.length) {
+      return result({ kind: 'not_found', message: 'Account type not found' }, null);
     }
 
     newAccount.WCount = res[0].WCountMax;
 
     sql.query('INSERT INTO CashAccount SET ?', newAccount, (err, res) => {
       if (err) {
-        console.log('Error creating account:', err);
-        result({ kind: 'error', message: 'Error creating account' }, null);
-        return;
+        console.error('Error creating account:', err);
+        return result({ kind: 'error', message: 'Error creating account' }, null);
       }
 
-      if (req.user.role !== 'employee' && req.user.role !== 'admin') {
-        console.log('Access denied');
-        result({ kind: 'access denied', message: 'You do not have permission to create accounts' }, null);
-        return;
-      }
-
-      console.log('Created account: ', newAccount);
-      result({ kind: 'success' }, newAccount);
+      console.log('Created account:', newAccount);
+      return result({ kind: 'success' }, newAccount);
     });
   });
 };
 
+// Update the balance of an account
 Account.updateBalance = (id, amount, result) => {
-  sql.query(
-    'UPDATE CashAccount SET Balance = Balance + ? WHERE AccountID = ?',
-    [amount, id],
-    (err, res) => {
-      if (err) {
-        console.log('Error updating balance:', err);
-        result({ kind: 'error', message: 'Error updating balance' }, null);
-        return;
-      }
-
-      if (res.affectedRows == 0) {
-        result({ kind: 'not_found', message: 'Account not found' }, null);
-      } else {
-        console.log('Updated account balance: ', { id: id, amount });
-        result({ kind: 'success' }, { id: id, amount });
-      }
+  sql.query('UPDATE CashAccount SET Balance = Balance + ? WHERE AccountID = ?', [amount, id], (err, res) => {
+    if (err) {
+      console.error('Error updating balance:', err);
+      return result({ kind: 'error', message: 'Error updating balance' }, null);
     }
-  );
+
+    if (res.affectedRows === 0) {
+      return result({ kind: 'not_found', message: 'Account not found' }, null);
+    }
+
+    console.log('Updated account balance:', { id, amount });
+    return result({ kind: 'success' }, { id, amount });
+  });
 };
 
 module.exports = Account;
-

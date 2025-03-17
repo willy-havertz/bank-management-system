@@ -1,146 +1,150 @@
-const sql = require('./db.js');
+const sql = require('./db');
 
 const Customer = function (customer) {
-    this.name = customer.name;
-    this.dateOfBirth = customer.dateOfBirth;
-    this.Address = customer.Address;
-    this.Phone = customer.Phone;
-    this.occupation = customer.occupation;
-  };
-  
-  Customer.getAll = (name, req, result) => {
-    let query = 'SELECT * FROM Customer';
-    if (req.user.role === 'customer') {
-      console.log('no access cust getall');
-      result({ kind: 'access denied' }, null);
-      return;
-    }
-  
-    if (name) {
-      query += ` WHERE name LIKE ${sql.escape(`%${name}%`)}`;
-    }
-  
-    sql.query(query, (err, res) => {
-      if (err) {
-        console.log('error: ', err);
-        result(err, null);
-        return;
-      }
-  
-      result(null, res);
-    });
-  };
-  
+  this.name = customer.name;
+  this.dateOfBirth = customer.dateOfBirth;
+  this.Address = customer.Address;
+  this.Phone = customer.Phone;
+  this.occupation = customer.occupation;
+};
 
-  Customer.findById = (id, req, result) => {
-    if (req.user.role === 'customer') {
-      console.log('no access cust findbyid');
-      result({ kind: 'access denied' }, null);
-      return;
-    }
-  
-    sql.query('SELECT * FROM Customer WHERE customerID = ?', id, (err, res) => {
-      if (err) {
-        console.log('error: ', err);
-        result(err, null);
-        return;
-      }
-  
-      if (res.length) {
-        console.log('found customer: ', res[0]);
-        result(null, res[0]);
-        return;
-      }
-    });
-  };
-  
+// Retrieve all customers (Only Admins/Employees)
+Customer.getAll = (name, req, result) => {
+  if (req.user.role === 'customer') {
+    console.warn('Access denied: Customers cannot retrieve all customers');
+    return result({ kind: 'access denied', message: 'Unauthorized access' }, null);
+  }
 
-  Customer.create = (newCustomer, req, result) => {
-    if (req.user.role === 'customer') {
-      console.log('no access cust create');
-      result({ kind: 'access denied' }, null);
-      return;
-    }
-  
-    sql.query('INSERT INTO Customer SET ?', newCustomer, (err, res) => {
-      if (err) {
-        console.log('error: ', err);
-        result(err, null);
-        return;
-      }
-  
-      console.log('Created Customer:', newCustomer);
-      result(null, newCustomer);
-    });
-  };
-  
+  let query = 'SELECT * FROM Customer';
+  let params = [];
 
-  Customer.remove = (id, req, result) => {
-    if (req.user.role === 'customer') {
-      console.log('no access cust remove');
-      result({ kind: 'access denied' }, null);
-      return;
-    }
-  
-    sql.query('DELETE FROM Customer WHERE CustomerID = ?', id, (err, res) => {
-      if (err) {
-        console.log('error: ', err);
-        result(err, null);
-        return;
-      }
-      console.log(`Deleted customer with id: ${id}`);
-    });
-  };
-  
+  if (name) {
+    query += ' WHERE name LIKE ?';
+    params.push(`%${name}%`);
+  }
 
-  Customer.removeAll = (result) => {
-    sql.query('DELETE FROM Customer', (err, res) => {
-      if (err) {
-        console.log('error: ', err);
-        result(err, null);
-        return;
-      }
-      console.log(`Deleted ${res.affectedRows} customers`);
-      result(null, res);
-    });
-  };
-  
-
-  Customer.updateById = (id, req, customer, result) => {
-    console.log({ customer, id });
-    if (req.user.role === 'customer') {
-      console.log('no access cust update by id');
-      result({ kind: 'access denied' }, null);
-      return;
+  sql.query(query, params, (err, res) => {
+    if (err) {
+      console.error('Error retrieving customers:', err);
+      return result({ kind: 'error', message: 'Database error' }, null);
     }
-  
-    sql.query(
-      'UPDATE Customer SET Name = ?, dateOfBirth = ?, Address = ?, Phone = ?, occupation = ? WHERE CustomerID = ?',
-      [
-        customer.Name,
-        customer.dateOfBirth,
-        customer.Address,
-        customer.Phone,
-        customer.occupation,
-        id,
-      ],
-      (err, res) => {
-        if (err) {
-          console.log('error: ', err);
-          result(err, null);
-          return;
-        }
-  
-        if (res.affectedRows == 0) {
-          result({ kind: 'not_found' }, null);
-          return;
-        }
-  
-        console.log('Updated customer: ', { id: id, ...customer });
-        result(null, { id: id, ...customer });
+
+    console.log('Retrieved customers:', res);
+    return result(null, res);
+  });
+};
+
+// Retrieve a customer by ID (Only Admins/Employees)
+Customer.findById = (id, req, result) => {
+  if (req.user.role === 'customer') {
+    console.warn('Access denied: Customers cannot retrieve other customers');
+    return result({ kind: 'access denied', message: 'Unauthorized access' }, null);
+  }
+
+  sql.query('SELECT * FROM Customer WHERE customerID = ?', [id], (err, res) => {
+    if (err) {
+      console.error('Error retrieving customer by ID:', err);
+      return result({ kind: 'error', message: 'Database error' }, null);
+    }
+
+    if (!res.length) {
+      return result({ kind: 'not_found', message: 'Customer not found' }, null);
+    }
+
+    console.log('Found customer:', res[0]);
+    return result(null, res[0]);
+  });
+};
+
+// Create a new customer (Only Admins/Employees)
+Customer.create = (newCustomer, req, result) => {
+  if (req.user.role === 'customer') {
+    console.warn('Access denied: Customers cannot create customers');
+    return result({ kind: 'access denied', message: 'Unauthorized access' }, null);
+  }
+
+  // Validate input
+  if (!newCustomer || !newCustomer.name || !newCustomer.dateOfBirth || !newCustomer.Address || !newCustomer.Phone || !newCustomer.occupation) {
+    return result({ kind: 'invalid_input', message: 'All fields are required' }, null);
+  }
+
+  sql.query('INSERT INTO Customer SET ?', newCustomer, (err, res) => {
+    if (err) {
+      console.error('Error creating customer:', err);
+      return result({ kind: 'error', message: 'Database error' }, null);
+    }
+
+    console.log('Created Customer:', newCustomer);
+    return result(null, { id: res.insertId, ...newCustomer });
+  });
+};
+
+// Delete a customer by ID (Only Admins/Employees)
+Customer.remove = (id, req, result) => {
+  if (req.user.role === 'customer') {
+    console.warn('Access denied: Customers cannot delete customers');
+    return result({ kind: 'access denied', message: 'Unauthorized access' }, null);
+  }
+
+  sql.query('DELETE FROM Customer WHERE CustomerID = ?', [id], (err, res) => {
+    if (err) {
+      console.error('Error deleting customer:', err);
+      return result({ kind: 'error', message: 'Database error' }, null);
+    }
+
+    if (res.affectedRows === 0) {
+      return result({ kind: 'not_found', message: 'Customer not found' }, null);
+    }
+
+    console.log(`Deleted customer with ID: ${id}`);
+    return result(null, { message: 'Customer deleted successfully' });
+  });
+};
+
+// Delete all customers (Only Admins/Employees)
+Customer.removeAll = (req, result) => {
+  if (req.user.role === 'customer') {
+    console.warn('Access denied: Customers cannot delete all customers');
+    return result({ kind: 'access denied', message: 'Unauthorized access' }, null);
+  }
+
+  sql.query('DELETE FROM Customer', (err, res) => {
+    if (err) {
+      console.error('Error deleting all customers:', err);
+      return result({ kind: 'error', message: 'Database error' }, null);
+    }
+
+    console.log(`Deleted ${res.affectedRows} customers`);
+    return result(null, { message: `Deleted ${res.affectedRows} customers` });
+  });
+};
+
+// Update a customer by ID (Only Admins/Employees)
+Customer.updateById = (id, req, customer, result) => {
+  if (req.user.role === 'customer') {
+    console.warn('Access denied: Customers cannot update customers');
+    return result({ kind: 'access denied', message: 'Unauthorized access' }, null);
+  }
+
+  console.log('Updating customer:', { id, ...customer });
+
+  sql.query(
+    'UPDATE Customer SET name = ?, dateOfBirth = ?, Address = ?, Phone = ?, occupation = ? WHERE CustomerID = ?',
+    [customer.name, customer.dateOfBirth, customer.Address, customer.Phone, customer.occupation, id],
+    (err, res) => {
+      if (err) {
+        console.error('Error updating customer:', err);
+        return result({ kind: 'error', message: 'Database error' }, null);
       }
-    );
-  };
-  
+
+      if (res.affectedRows === 0) {
+        return result({ kind: 'not_found', message: 'Customer not found' }, null);
+      }
+
+      console.log('Updated customer:', { id, ...customer });
+      return result(null, { id, ...customer });
+    }
+  );
+};
 
 module.exports = Customer;

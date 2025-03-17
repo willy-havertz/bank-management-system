@@ -1,4 +1,3 @@
-// The main entry point for your Node.js application. It sets up the Express server and handles API requests.
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -15,13 +14,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// routes
-app.use('api/account', accountRoutes);
-app.use('api/auth', authRoutes);
-app.use('api/deposit', depositRoutes);
-app.use('api/transaction', transactionRoutes);
-app.use('api/withdrawal', withdrawalRoutes);
-app.use('api/loan', loanRoutes);
+// Routes
+app.use('/api/account', accountRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/deposit', depositRoutes);
+app.use('/api/transaction', transactionRoutes);
+app.use('/api/withdrawal', withdrawalRoutes);
+app.use('/api/loan', loanRoutes);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`server running on port ${PORT}`));
-

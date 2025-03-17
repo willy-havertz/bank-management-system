@@ -1,161 +1,154 @@
-const sql = require('./db.js');
+const sql = require('./db');
 
-const onlineLoan = function (loan) {
-  this.LoanID = loan.loanID;
-  this.Amount = loan.amount;
-  this.FDAccountID = loan.fdaccountID;
-  this.TypeID = loan.typeID;
-  this.SavingsAccountID = loan.savingsID;
+const Deposit = function (deposit) {
+  this.AccountID = deposit.AccountID;
+  this.Amount = deposit.Amount;
+  this.Remark = deposit.Remark;
 };
 
-// Utility function to handle errors consistently
-const handleError = (result, err) => {
-  console.log('error: ', err);
-  result({ kind: 'error', ...err }, null);
-};
-
-onlineLoan.getAll = (customerID, result) => {
-  console.log('in get all', customerID);
-  let query = 'SELECT * from OnlineLoan';
-
-  if (customerID) {
-    query += ` WHERE CustomerID = ${sql.escape(customerID)}`;
-  }
-
-  sql.query(query, (err, res) => {
+// ✅ Get all deposits
+Deposit.getAll = (result) => {
+  sql.query('SELECT * FROM Deposit', (err, res) => {
     if (err) {
-      return handleError(result, err);
+      console.error('❌ Error fetching deposits:', err);
+      result({ message: 'Database error' }, null);
+      return;
     }
-    if (res.length) {
-      console.log('found onlineLoans: ', res);
-      result({ kind: 'success' }, res);
-    } else {
-      result({ kind: 'not_found' }, null);
-    }
+    result(null, res);
   });
 };
 
-onlineLoan.create = (newOnlineLoan, result) => {
-  console.log('IN OL model', newOnlineLoan);
-
-  // Check loan limit
-  if (newOnlineLoan.Amount > 500000) {
-    result({ kind: 'Limit exceeded' }, null);
-    return;
-  }
-
-  // Query FD account balance
-  sql.query('SELECT amount FROM FDAccount WHERE AccountID = ?', newOnlineLoan.FDAccountID, (err, res) => {
+// ✅ Find deposit by TransactionID
+Deposit.findById = (id, result) => {
+  sql.query('SELECT * FROM Deposit WHERE TransactionID = ?', [id], (err, res) => {
     if (err) {
-      return handleError(result, err);
-    }
-    
-    if (0.6 * res[0].amount < newOnlineLoan.Amount) {
-      result({ kind: 'FD Amount is not sufficient' }, null);
+      console.error('❌ Error finding deposit by ID:', err);
+      result({ message: 'Database error' }, null);
       return;
     }
 
-    // Create the online loan using the stored procedure
-    sql.query(
-      'call create_onlineloan_procedure (?,?,?,?,?,?, @code)',
-      [
-        newOnlineLoan.CustomerID,
-        newOnlineLoan.SavingsAccountID,
-        newOnlineLoan.Amount,
-        newOnlineLoan.Duration,
-        newOnlineLoan.FDAccountID,
-        newOnlineLoan.InterestRate,
-      ],
-      (err, res) => {
-        if (err) {
-          return handleError(result, err);
-        }
-        console.log('created Online Loan: ', { id: res.insertId, ...newOnlineLoan });
-        result({ kind: 'success' }, { id: res.insertId, ...newOnlineLoan });
-      }
-    );
+    if (res.length) {
+      console.log('✅ Found deposit:', res[0]);
+      result(null, res[0]);
+    } else {
+      result({ message: 'Deposit not found' }, null);
+    }
   });
 };
 
-onlineLoan.getInstallmentsByAccountID = (accountID, req, result) => {
-  sql.query('SELECT * from OnlineLoanInstallment WHERE LoanID = ?', accountID, (err, res) => {
+// ✅ Find deposits by AccountID
+Deposit.findByAccountId = (accountID, result) => {
+  sql.query('SELECT * FROM Deposit WHERE AccountID = ?', [accountID], (err, res) => {
     if (err) {
-      return handleError(result, err);
+      console.error('❌ Error finding deposits by AccountID:', err);
+      result({ message: 'Database error' }, null);
+      return;
     }
-    sql.query('SELECT * from OnlineLoan WHERE LoanID = ?', accountID, (err, res1) => {
+
+    if (res.length) {
+      console.log('✅ Found deposits:', res);
+      result(null, res);
+    } else {
+      result({ message: 'No deposits found for the given AccountID' }, null);
+    }
+  });
+};
+
+// ✅ Create a new deposit and update balance using TRANSACTION
+Deposit.create = (newDeposit, result) => {
+  const { AccountID, Amount, Remark } = newDeposit;
+
+  sql.getConnection((err, connection) => {
+    if (err) {
+      console.error('❌ Database connection error:', err);
+      result({ message: 'Database error' }, null);
+      return;
+    }
+
+    connection.beginTransaction((err) => {
       if (err) {
-        return handleError(result, err);
+        console.error('❌ Error starting transaction:', err);
+        result({ message: 'Transaction error' }, null);
+        return;
       }
-      
-      if (res1.length) {
-        // Check access control for customer
-        if (req.user.role === 'customer' && req.user.CustomerID !== res1[0].CustomerID) {
-          console.log('no access to online loan installments');
-          result({ kind: 'access denied' }, null);
+
+      // 🔹 First, check if the account exists
+      connection.query('SELECT Balance FROM CashAccount WHERE AccountID = ?', [AccountID], (err, res) => {
+        if (err) {
+          console.error('❌ Error checking account:', err);
+          connection.rollback(() => result({ message: 'Database error' }, null));
           return;
         }
 
-        console.log('found installments for account: ', res);
-        result({ kind: 'success' }, res);
-      } else {
-        result({ kind: 'not_found' }, null);
-      }
+        if (res.length === 0) {
+          console.warn('⚠️ Deposit failed: No matching account found.');
+          connection.rollback(() => result({ message: 'Account does not exist' }, null));
+          return;
+        }
+
+        // 🔹 Update balance first
+        connection.query(
+          'UPDATE CashAccount SET Balance = Balance + ? WHERE AccountID = ?',
+          [Amount, AccountID],
+          (err, res) => {
+            if (err) {
+              console.error('❌ Error updating account balance:', err);
+              connection.rollback(() => result({ message: 'Failed to update balance' }, null));
+              return;
+            }
+
+            if (res.affectedRows === 0) {
+              console.warn('⚠️ Deposit failed: Balance update failed.');
+              connection.rollback(() => result({ message: 'Deposit failed. No matching account found.' }, null));
+              return;
+            }
+
+            // 🔹 If balance update is successful, insert deposit record
+            connection.query(
+              'INSERT INTO Deposit (AccountID, Amount, Remark, DepositTime) VALUES (?, ?, ?, NOW())',
+              [AccountID, Amount, Remark],
+              (err, res) => {
+                if (err) {
+                  console.error('❌ Error creating deposit:', err);
+                  connection.rollback(() => result({ message: 'Database error' }, null));
+                  return;
+                }
+
+                // ✅ COMMIT Transaction
+                connection.commit((err) => {
+                  if (err) {
+                    console.error('❌ Transaction commit error:', err);
+                    connection.rollback(() => result({ message: 'Transaction error' }, null));
+                    return;
+                  }
+
+                  console.log('✅ Deposit created successfully:', {
+                    TransactionID: res.insertId,
+                    AccountID,
+                    Amount,
+                    Remark,
+                  });
+
+                  result(null, {
+                    message: 'Deposit successful',
+                    deposit: {
+                      TransactionID: res.insertId,
+                      AccountID,
+                      Amount,
+                      Remark,
+                      DepositTime: new Date(),
+                    },
+                  });
+                });
+              }
+            );
+          }
+        );
+      });
     });
+
+    connection.release();
   });
 };
 
-onlineLoan.getUnpaidOnlineInstallments = (result) => {
-  const query = `select * from OnlineLoanInstallment where DeadlineDate < CURRENT_TIMESTAMP and Paid = false order by DeadlineDate`;
-  sql.query(query, (err, res) => {
-    if (err) {
-      return handleError(result, err);
-    }
-
-    if (res.length) {
-      console.log('found unpaid installments: ', res);
-      result({ kind: 'success' }, res);
-    } else {
-      result({ kind: 'not_found' }, null);
-    }
-  });
-};
-
-onlineLoan.getInstallmentByID = (installmentID, result) => {
-  sql.query('SELECT * from OnlineLoanInstallment WHERE InstallmentID = ?', installmentID, (err, res) => {
-    if (err) {
-      return handleError(result, err);
-    }
-
-    if (res.length) {
-      console.log('found installment: ', res);
-      result({ kind: 'success' }, res[0]);
-    } else {
-      console.log('installment not found');
-      result({ kind: 'not_found' }, null);
-    }
-  });
-};
-
-onlineLoan.payInstallment = (installmentID, result) => {
-  sql.query('CALL pay_onl_installment(?)', installmentID, (err, res) => {
-    if (err) {
-      return handleError(result, err);
-    }
-
-    if (res === 'ALREADY_PAID') {
-      console.log('installment already paid');
-      result({ kind: 'already_paid ' }, null);
-    } else if (res === 'INSTALLMENT_NOT_FOUND') {
-      console.log('installment not found');
-      result({ kind: 'not_found' }, null);
-    } else if (res === 'FAILED') {
-      console.log('installment payment failed');
-      result({ kind: 'failed' }, null);
-    } else {
-      console.log('installment paid');
-      result({ kind: 'success' }, res);
-    }
-  });
-};
-
-module.exports = onlineLoan;
+module.exports = Deposit;

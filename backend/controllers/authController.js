@@ -1,112 +1,113 @@
-const onlineCustomers = require('../prototype/online.customer.prototype');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-
-require('dotenv').config();
+const onlineCustomers = require("../prototype/online.customer.prototype");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-exports.customerLogin = (req, res) => {
-  const userName = req.body.loginDetails.userName;
-  const password = req.body.loginDetails.password;
+// Ensure JWT_SECRET is defined
+if (!JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET is not defined.");
+}
 
-  // Validate if userName and password are provided
+// Customer Login
+exports.customerLogin = (req, res) => {
+  if (!req.body.loginDetails) {
+    return res.status(400).send({ message: "Invalid request: Missing login details." });
+  }
+
+  const { userName, password } = req.body.loginDetails;
+
   if (!userName || !password) {
     return res.status(400).send({
-      auth: 'fail',
-      message: 'Username and password are required.',
+      auth: "fail",
+      message: "Username and password are required.",
     });
   }
 
-  // Find the customer by username
   onlineCustomers.findByUsername(userName, (err, data) => {
     if (err) {
-      if (err.kind === 'not_found') {
-        return res.status(404).send({
-          auth: 'fail',
-          message: 'User not found.',
-        });
-      }
-      return res.status(500).send({
-        auth: 'fail',
-        message: 'Error retrieving user.',
+      const errorMessage = err.kind === "not_found" ? "User not found." : "Error retrieving user.";
+      return res.status(err.kind === "not_found" ? 404 : 500).send({
+        auth: "fail",
+        message: errorMessage,
       });
     }
 
-    // Compare password
-    bcrypt.compare(password, data.Password, function (err, result) {
+    if (!data || !data.Password) {
+      return res.status(404).send({ auth: "fail", message: "User not found or password missing." });
+    }
+
+    bcrypt.compare(password, data.Password, (err, result) => {
       if (err) {
         return res.status(500).send({
-          auth: 'fail',
-          message: 'Error during password comparison.',
+          auth: "fail",
+          message: "Error during password comparison.",
         });
       }
 
-      // If passwords match
       if (result) {
-        // Prepare JWT payload with non-sensitive information
         const payload = {
           customerID: data.CustomerID,
           userName: data.userName,
-          role: 'customer',
+          role: "customer",
         };
 
-        // Generate the JWT token
-        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '2h' });
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "2h" });
 
-        // Send success response with the token and user info
         return res.send({
-          auth: 'success',
-          role: 'customer',
-          expires: '2h',
+          auth: "success",
+          role: "customer",
+          expires: "2h",
           customerID: data.CustomerID,
           userName: data.userName,
           token,
         });
       } else {
         return res.status(401).send({
-          auth: 'fail',
-          message: 'Incorrect password.',
+          auth: "fail",
+          message: "Incorrect password.",
         });
       }
     });
   });
 };
 
-
-
+// Create New Online Customer
 exports.createOnlineCustomer = (req, res) => {
-    const onlineCustomer = req.body.onlineCustomer;
-  
-    // Validate required fields
-    if (!onlineCustomer.userName || !onlineCustomer.password || !onlineCustomer.email) {
-      return res.status(400).send({
-        message: 'Username, password, and email are required to create a customer.',
+  if (!req.body.onlineCustomer) {
+    return res.status(400).send({ message: "Missing online customer details." });
+  }
+
+  const { userName, password, email } = req.body.onlineCustomer;
+
+  if (!userName || !password || !email) {
+    return res.status(400).send({
+      message: "Username, password, and email are required to create a customer.",
+    });
+  }
+
+  bcrypt.hash(password, 10, (err, hashedPassword) => {
+    if (err) {
+      return res.status(500).send({
+        message: "Error hashing password.",
       });
     }
-  
-    // Hash the password before storing it
-    bcrypt.hash(onlineCustomer.password, 10, (err, hashedPassword) => {
-      if (err) {
+
+    const onlineCustomer = {
+      userName,
+      password: hashedPassword,
+      email,
+    };
+
+    onlineCustomers.create(onlineCustomer, (err, data) => {
+      if (err && err.kind === "error") {
         return res.status(500).send({
-          message: 'Error hashing password.',
+          message: err.message || "Some error occurred while creating the customer.",
         });
       }
-  
-      // Replace plain password with hashed password
-      onlineCustomer.password = hashedPassword;
-  
-      // Create the customer
-      onlineCustomers.create(onlineCustomer, (err, data) => {
-        if (err && err.kind === 'error') {
-          return res.status(500).send({
-            message: err.message || 'Some error occurred while creating the customer.',
-          });
-        }
-  
-        // Return created customer data
-        return res.status(201).send(data);
-      });
+
+      return res.status(201).send(data);
     });
-  };
-  
+  });
+};

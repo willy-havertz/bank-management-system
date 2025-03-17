@@ -1,104 +1,124 @@
-const CustomerPrototype = require('../prototype/customer.prototype');
+const onlineCustomers = require("../prototype/online.customer.prototype");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+require("dotenv").config();
 
-// Retrieve all customers
-exports.findAll = (req, res) => {
-  console.log(req.body);
-  const name = req.body.name;
-  
-  // Add validation for name if needed
-  if (!name) {
-    return res.status(400).send({
-      message: "Name is required to search customers."
-    });
-  }
+const JWT_SECRET = process.env.JWT_SECRET;
 
-  CustomerPrototype.getAll(name, req, (err, data) => {
-    if (err) {
-      res.status(500).send({
-        message: err.message || 'Some error occurred while retrieving customers.'
-      });
-    } else {
-      res.send(data);
+// Debugging: Ensure JWT_SECRET is properly loaded
+if (!JWT_SECRET) {
+  console.error("ERROR: JWT_SECRET is not defined. Check your .env file.");
+  process.exit(1); // Stop execution if missing
+}
+
+// Customer Login
+exports.customerLogin = async (req, res) => {
+  try {
+    console.log("Login request received:", req.body);
+
+    if (!req.body.loginDetails) {
+      return res.status(400).send({ message: "Invalid request: Missing login details." });
     }
-  });
+
+    const { userName, password } = req.body.loginDetails;
+
+    if (!userName || !password) {
+      return res.status(400).send({
+        auth: "fail",
+        message: "Username and password are required.",
+      });
+    }
+
+    // Retrieve user from database
+    onlineCustomers.findByUsername(userName, async (err, data) => {
+      if (err) {
+        console.error("Error retrieving user:", err);
+        return res.status(err.kind === "not_found" ? 404 : 500).send({
+          auth: "fail",
+          message: err.kind === "not_found" ? "User not found." : "Error retrieving user.",
+        });
+      }
+
+      // Debug: Check what we got from DB
+      console.log("Retrieved user:", data);
+
+      // Ensure password exists in retrieved data
+      const storedPassword = data.Password || data.password;
+      if (!storedPassword) {
+        console.error("Error: Password field is missing in database.");
+        return res.status(500).send({ auth: "fail", message: "Error: Password not found in DB." });
+      }
+
+      // Compare passwords
+      const isMatch = await bcrypt.compare(password, storedPassword);
+      if (!isMatch) {
+        console.warn("Incorrect password for user:", userName);
+        return res.status(401).send({
+          auth: "fail",
+          message: "Incorrect password.",
+        });
+      }
+
+      // Generate JWT token
+      const payload = {
+        customerID: data.CustomerID,
+        userName: data.userName,
+        role: "customer",
+      };
+
+      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "2h" });
+
+      console.log("Login successful for user:", userName);
+      res.send({
+        auth: "success",
+        role: "customer",
+        expires: "2h",
+        customerID: data.CustomerID,
+        userName: data.userName,
+        token,
+      });
+    });
+  } catch (error) {
+    console.error("Server error during login:", error);
+    res.status(500).send({ auth: "fail", message: "Internal Server Error." });
+  }
 };
 
-// Create a new customer
-exports.createCustomer = (req, res) => {
-  console.log(req.body);
-  
-  const customer = req.body.customer;
+// Create New Online Customer
+exports.createOnlineCustomer = async (req, res) => {
+  try {
+    console.log("Create customer request received:", req.body);
 
-  // Add validation for customer object fields
-  if (!customer || !customer.name || !customer.email) {
-    return res.status(400).send({
-      message: "Customer name and email are required."
-    });
-  }
-
-  CustomerPrototype.create(customer, req, (err, data) => {
-    if (err) {
-      res.status(500).send({
-        message: err.message || 'Some error occurred while creating customers.'
-      });
-    } else {
-      res.send(data);
+    if (!req.body.onlineCustomer) {
+      return res.status(400).send({ message: "Missing online customer details." });
     }
-  });
-};
 
-// Retrieve a customer by ID
-exports.getFromID = (req, res) => {
-  const id = req.params.id;  // Use params to get the ID
+    const { userName, password, email } = req.body.onlineCustomer;
 
-  console.log(id);  // Log the id
-
-  // Validate if id is provided
-  if (!id) {
-    return res.status(400).send({
-      message: "Customer ID is required."
-    });
-  }
-
-  CustomerPrototype.findById(id, req, (err, data) => {
-    if (err) {
-      res.status(500).send({
-        message: err.message || 'Some error occurred while retrieving customer.'
+    if (!userName || !password || !email) {
+      return res.status(400).send({
+        message: "Username, password, and email are required to create a customer.",
       });
-    } else {
-      res.send(data);
     }
-  });
-};
 
-// Update a customer by ID
-exports.updateCustomer = (req, res) => {
-  const id = req.params.id; // Get the customer ID from the URL params
-  const customer = req.body.customer;  // Get customer details from the body
+    // Hash password securely
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-  console.log(req.body, req.params);
+    const onlineCustomer = { userName, password: hashedPassword, email };
 
-  // Validate if customer object is provided
-  if (!customer) {
-    return res.status(400).send({
-      message: "Customer data is required for update."
+    onlineCustomers.create(onlineCustomer, (err, data) => {
+      if (err) {
+        console.error("Error creating customer:", err);
+        return res.status(500).send({
+          message: err.message || "Some error occurred while creating the customer.",
+        });
+      }
+
+      console.log("Customer created successfully:", data);
+      return res.status(201).send(data);
     });
+  } catch (error) {
+    console.error("Server error during customer creation:", error);
+    res.status(500).send({ message: "Internal Server Error." });
   }
-
-  // If id is not provided
-  if (!id) {
-    return res.status(400).send({
-      message: "Customer ID is required to update."
-    });
-  }
-
-  CustomerPrototype.updateById(id, req, (err, data) => {
-    if (err) {
-      res.status(500).send({
-        message: err.message || 'Some error occurred while updating customer.'
-      });
-    } else {
-      res.send(data);
-    }
-  });
 };
