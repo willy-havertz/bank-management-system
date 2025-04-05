@@ -1,0 +1,34 @@
+# Node.js dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files (do not commit sensitive information)
+.env
+*.env
+
+# Build output directories (if applicable)
+dist/
+build/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# SQL database files (e.g., SQLite used in development/testing)
+*.sqlite
+*.sqlite3
+
+# Code coverage reports
+coverage/
+
+# Optional: Ignore local configuration files
+config/local-config.json

@@ -1,113 +1,125 @@
-const onlineCustomers = require("../prototype/online.customer.prototype");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-require("dotenv").config();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const UserPrototype = require('../prototypes/userPrototype');
+const pool = require('../config/databaseConfig');
+const { sendResetEmail } = require('../utils/mailer');
+require('dotenv').config();
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-// Ensure JWT_SECRET is defined
-if (!JWT_SECRET) {
-  console.error("FATAL ERROR: JWT_SECRET is not defined.");
+async function register(req, res) {
+  try {
+    const { name, email, password, phone, idNumber, role } = req.body;
+    console.log('Register request received with:', { name, email, phone, idNumber, role });
+    
+    if (!name || !email || !password || !phone || !idNumber) {
+      console.log('Missing required fields');
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+    
+    const existing = await UserPrototype.findByEmail(email);
+    console.log('Existing user lookup result:', existing);
+    if (existing.length) {
+      console.log('User already exists:', email);
+      return res.status(400).json({ message: "User already exists" });
+    }
+    
+    const hashedPassword = await bcrypt.hash(password, 10);
+    // For customers, initial balance is set to Ksh 0; employees start with 0.
+    const initialBalance = role === 'customer' ? 0 : 0;
+    
+    await UserPrototype.create({ name, email, password: hashedPassword, phone, idNumber, role, balance: initialBalance });
+    console.log('User created successfully:', email);
+    
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (err) {
+    console.error("Error in register:", err);
+    res.status(500).json({ message: "Error registering user" });
+  }
 }
 
-// Customer Login
-exports.customerLogin = (req, res) => {
-  if (!req.body.loginDetails) {
-    return res.status(400).send({ message: "Invalid request: Missing login details." });
-  }
-
-  const { userName, password } = req.body.loginDetails;
-
-  if (!userName || !password) {
-    return res.status(400).send({
-      auth: "fail",
-      message: "Username and password are required.",
-    });
-  }
-
-  onlineCustomers.findByUsername(userName, (err, data) => {
-    if (err) {
-      const errorMessage = err.kind === "not_found" ? "User not found." : "Error retrieving user.";
-      return res.status(err.kind === "not_found" ? 404 : 500).send({
-        auth: "fail",
-        message: errorMessage,
-      });
+async function login(req, res) {
+  try {
+    const { email, password } = req.body;
+    console.log('Login attempt for email:', email);
+    
+    const users = await UserPrototype.findByEmail(email);
+    console.log('User lookup result:', users);
+    
+    if (users.length === 0) {
+      console.log('No user found with email:', email);
+      return res.status(401).json({ message: "Invalid email or password" });
     }
-
-    if (!data || !data.Password) {
-      return res.status(404).send({ auth: "fail", message: "User not found or password missing." });
+    
+    const user = users[0];
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      console.log('Password mismatch for:', email);
+      return res.status(401).json({ message: "Invalid email or password" });
     }
-
-    bcrypt.compare(password, data.Password, (err, result) => {
-      if (err) {
-        return res.status(500).send({
-          auth: "fail",
-          message: "Error during password comparison.",
-        });
-      }
-
-      if (result) {
-        const payload = {
-          customerID: data.CustomerID,
-          userName: data.userName,
-          role: "customer",
-        };
-
-        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "2h" });
-
-        return res.send({
-          auth: "success",
-          role: "customer",
-          expires: "2h",
-          customerID: data.CustomerID,
-          userName: data.userName,
-          token,
-        });
-      } else {
-        return res.status(401).send({
-          auth: "fail",
-          message: "Incorrect password.",
-        });
-      }
-    });
-  });
-};
-
-// Create New Online Customer
-exports.createOnlineCustomer = (req, res) => {
-  if (!req.body.onlineCustomer) {
-    return res.status(400).send({ message: "Missing online customer details." });
+    
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role, name: user.name },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    console.log('Login successful for:', email);
+    res.json({ token, role: user.role });
+  } catch (err) {
+    console.error("Error in login:", err);
+    res.status(500).json({ message: "Login error" });
   }
+}
 
-  const { userName, password, email } = req.body.onlineCustomer;
-
-  if (!userName || !password || !email) {
-    return res.status(400).send({
-      message: "Username, password, and email are required to create a customer.",
-    });
-  }
-
-  bcrypt.hash(password, 10, (err, hashedPassword) => {
-    if (err) {
-      return res.status(500).send({
-        message: "Error hashing password.",
-      });
+async function forgotPassword(req, res) {
+  try {
+    const { email } = req.body;
+    console.log("Received forgotPassword request for:", email);
+    
+    if (!email) {
+      console.log("Email is required but not provided");
+      return res.status(400).json({ message: "Email is required" });
     }
+    
+    const users = await UserPrototype.findByEmail(email);
+    console.log('User lookup in forgotPassword:', users);
+    if (users.length === 0) {
+      console.log("No user found for email:", email);
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    const user = users[0];
+    
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not defined in environment variables");
+      throw new Error("Internal configuration error");
+    }
+    
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    console.log("Generated reset token:", token);
+    
+    await sendResetEmail(email, token);
+    console.log("Reset email sent successfully to:", email);
+    
+    res.json({ message: "Password reset link sent to your email" });
+  } catch (err) {
+    console.error("Error processing forgot password:", err);
+    res.status(500).json({ message: "Error processing forgot password" });
+  }
+}
 
-    const onlineCustomer = {
-      userName,
-      password: hashedPassword,
-      email,
-    };
+async function resetPassword(req, res) {
+  try {
+    const { token, newPassword } = req.body;
+    // Verify the token (ensure it hasn't expired and is valid)
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    // Update the user's password in the database
+    await pool.execute("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, decoded.id]);
+    res.json({ message: "Password reset successfully" });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(400).json({ message: "Invalid or expired token" });
+  }
+}
 
-    onlineCustomers.create(onlineCustomer, (err, data) => {
-      if (err && err.kind === "error") {
-        return res.status(500).send({
-          message: err.message || "Some error occurred while creating the customer.",
-        });
-      }
-
-      return res.status(201).send(data);
-    });
-  });
-};
+module.exports = { register, login, forgotPassword, resetPassword };

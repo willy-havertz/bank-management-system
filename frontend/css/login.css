@@ -1,0 +1,116 @@
+/* Global Styles */
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Auth Page Background */
+  .auth-body {
+    background: linear-gradient(135deg, #0a0a0a, #1f1f1f);
+    color: #fff;
+  }
+  
+  /* Auth Card */
+  .auth-card {
+    width: 100%;
+    max-width: 500px;
+    border: none;
+    border-radius: 15px;
+    background: #212529;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+  }
+  
+  /* Bank Name Header */
+  .bank-name {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #00adb5;
+  }
+  
+  .bank-name span {
+    color: #ff5722;
+  }
+  
+  /* Tabs */
+  .nav-tabs .nav-link {
+    color: #aaa;
+    transition: 0.3s ease;
+  }
+  
+  .nav-tabs .nav-link.active {
+    color: #00adb5;
+    border-bottom: 2px solid #00adb5;
+  }
+  
+  /* Form Controls */
+  .form-label {
+    color: #fff;
+    font-weight: 600;
+  }
+  
+  .form-control {
+    background: #343a40;
+    color: #fff;
+    border: 1px solid #495057;
+  }
+  
+  /* Buttons */
+  .btn-primary {
+    background: #00adb5;
+    border: none;
+  }
+  
+  .btn-primary:hover {
+    background: #007f89;
+  }
+  
+  .btn-success {
+    background: #28a745;
+  }
+  
+  .btn-success:hover {
+    background: #218838;
+  }
+  
+  /* Home Link */
+  .home-link {
+    color: #00adb5;
+    transition: color 0.3s ease;
+  }
+  
+  .home-link:hover {
+    color: #ff5722;
+  }
+  
+/* Toast Container Enhancements */
+#liveToast {
+  background: linear-gradient(135deg, #343a40, #212529);
+  color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Toast Header Styling */
+#liveToast .toast-header {
+  background-color: #00796B; /* Teal background */
+  color: #fff;
+  font-size: 1rem;
+  font-weight: bold;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.75rem 1rem;
+}
+
+/* Toast Body Styling */
+#liveToast .toast-body {
+  font-size: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #b30000;
+  text-align: center;
+  padding: 1rem;
+  background-color: #e0f2f1;
+  border-top: 1px solid #b2dfdb;
+  border-radius: 0 0 8px 8px;
+}

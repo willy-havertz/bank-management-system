@@ -1,225 +1,182 @@
 CREATE DATABASE banking_system;
 USE banking_system;
 
--- Create table for customer information
-CREATE TABLE Customer (
-    CustomerID INT PRIMARY KEY AUTO_INCREMENT,
-    full_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    DateCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  phone VARCHAR(20),
+  idNumber VARCHAR(50),
+  role ENUM('customer', 'employee') DEFAULT 'customer',
+  balance DECIMAL(10,2) DEFAULT 0,
+  profile_picture VARCHAR(255),
+  investments DECIMAL(10,2) DEFAULT 0,
+  creditUtilized DECIMAL(10,2) DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create table for account details
-CREATE TABLE Account (
-    AccountID INT PRIMARY KEY AUTO_INCREMENT,
-    CustomerID INT,
-    accountType ENUM('Savings', 'Checking') DEFAULT 'Savings',
-
-    Balance DECIMAL(15,2) DEFAULT 0.00,
-    Status ENUM('Active', 'Inactive', 'Frozen') DEFAULT 'Active',
-    DateCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)
+CREATE TABLE transactions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  userId INT NOT NULL,
+  type ENUM('Deposit', 'Withdrawal', 'Send', 'Receive') NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES users(id)
 );
 
--- Create table for transactions
-CREATE TABLE Transaction (
-    TransactionID INT PRIMARY KEY AUTO_INCREMENT,
-    AccountID INT,
-    TransactionType ENUM('Deposit', 'Withdrawal', 'Transfer') NOT NULL,
-    Amount DECIMAL(15,2) NOT NULL,
-    TransactionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    description TEXT,
-    FOREIGN KEY (AccountID) REFERENCES Account(AccountID)
-);
-
--- Create table for loan details
 CREATE TABLE loans (
-    loan_id INT PRIMARY KEY AUTO_INCREMENT,
-    CustomerID INT,
-    AccountI INT,
-    Amount DECIMAL(13,2) NOT NULL,
-    InterestRate DECIMAL(5,2) NOT NULL,
-    TermMonths INT NOT NULL,
-    Status ENUM('Pending', 'Approved', 'Rejected', 'Paid') DEFAULT 'Pending',
-    DateCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
-    FOREIGN KEY (AccountID) REFERENCES Accounts(AccountID)
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  userId INT NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  purpose VARCHAR(255) NOT NULL,
+  status VARCHAR(50) DEFAULT 'Pending',
+  date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES users(id)
 );
 
--- Create table for loan payments
-CREATE TABLE LoanPayments (
-    PaymentID INT PRIMARY KEY AUTO_INCREMENT,
-    LoanID INT,
-    PaymentAmount DECIMAL(15,2) NOT NULL,
-    PaymentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (LoanID) REFERENCES Loans(LoanID)
+CREATE TABLE notifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  userId INT NOT NULL,
+  message VARCHAR(255),
+  date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES users(id)
 );
 
--- Create table for account queries/support tickets
-CREATE TABLE account_queries (
-    QueryID INT PRIMARY KEY AUTO_INCREMENT,
-    CustomerID INT,
-    Subject VARCHAR(200) NOT NULL,
-    Description TEXT NOT NULL,
-    Status ENUM('Open', 'In Progress', 'Resolved', 'Closed') DEFAULT 'Open',
-    DateCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ResolvedAt TIMESTAMP,
-    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
-);
-CREATE TABLE Newb (
-    NewbID INT NOT NULL AUTO_INCREMENT,
-    primary key(NewbID)
-);
+DELIMITER $$
 
+-- Procedure for depositing funds
+CREATE PROCEDURE depositFunds(
+  IN p_userId INT,
+  IN p_amount DECIMAL(10,2)
+)
+BEGIN
+  UPDATE users SET balance = balance + p_amount WHERE id = p_userId;
+  INSERT INTO transactions (userId, type, amount) VALUES (p_userId, 'Deposit', p_amount);
+  INSERT INTO notifications (userId, message) 
+    VALUES (p_userId, CONCAT('You have deposited Ksh ', p_amount, '.'));
+END$$
 
--- Sample data for customers
-INSERT INTO customersTABLE (first_name, last_name, email, phone_number) VALUES
-(' ', ' ', ' ', ' ', '  '),
-('  ', '  ', '  ', '    ', '    '),
-('   ', '   ', '     ', '      ', '     ');
+-- Procedure for withdrawing funds
+CREATE PROCEDURE withdrawFunds(
+  IN p_userId INT,
+  IN p_amount DECIMAL(10,2)
+)
+BEGIN
+  DECLARE currentBalance DECIMAL(10,2);
+  SELECT balance INTO currentBalance FROM users WHERE id = p_userId;
+  IF currentBalance >= p_amount THEN
+    UPDATE users SET balance = balance - p_amount WHERE id = p_userId;
+    INSERT INTO transactions (userId, type, amount) VALUES (p_userId, 'Withdrawal', p_amount);
+    INSERT INTO notifications (userId, message) 
+      VALUES (p_userId, CONCAT('You have withdrawn Ksh ', p_amount, '.'));
+  ELSE
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Insufficient balance';
+  END IF;
+END$$
 
--- Sample data for accounts
-INSERT INTO accounts (customer_id, account_type, balance) VALUES
-(1, 'Savings', 5000.00, 'Active'),
-(1, 'Checking', 2500.00, 'Active'),
-(2, 'Savings', 10000.00, 'Active'),
-(3, 'Checking', 3500.00, 'Active');
+-- Procedure for applying for a loan
+CREATE PROCEDURE applyForLoan(
+  IN p_userId INT,
+  IN p_amount DECIMAL(10,2),
+  IN p_purpose VARCHAR(255)
+)
+BEGIN
+  INSERT INTO loans (userId, amount, purpose, status) VALUES (p_userId, p_amount, p_purpose, 'Pending');
+  INSERT INTO notifications (userId, message) 
+    VALUES (p_userId, CONCAT('Loan application for Ksh ', p_amount, ' submitted.'));
+END$$
 
--- Sample data for transactions
-INSERT INTO transactions (account_id, transaction_type, amount, description) VALUES
-(1, 'Deposit', 1000.00, 'Initial deposit'),
-(2, 'Withdrawal', 500.00, 'ATM withdrawal'),
-(3, 'Transfer', 1500.00, 'Transfer to checking'),
-(4, 'Deposit', 2000.00, 'Salary deposit');
+-- Procedure for sending money between accounts
+CREATE PROCEDURE sendMoney(
+  IN p_senderId INT,
+  IN p_recipientEmail VARCHAR(100),
+  IN p_amount DECIMAL(10,2)
+)
+BEGIN
+  DECLARE senderBalance DECIMAL(10,2);
+  DECLARE recipientId INT;
+  
+  SELECT balance INTO senderBalance FROM users WHERE id = p_senderId;
+  IF senderBalance < p_amount THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Insufficient balance';
+  END IF;
+  
+  SELECT id INTO recipientId FROM users WHERE email = p_recipientEmail LIMIT 1;
+  IF recipientId IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Recipient not found';
+  END IF;
+  
+  UPDATE users SET balance = balance - p_amount WHERE id = p_senderId;
+  UPDATE users SET balance = balance + p_amount WHERE id = recipientId;
+  
+  INSERT INTO transactions (userId, type, amount) VALUES (p_senderId, 'Send', p_amount);
+  INSERT INTO transactions (userId, type, amount) VALUES (recipientId, 'Receive', p_amount);
+  
+  INSERT INTO notifications (userId, message)
+    VALUES (p_senderId, CONCAT('You sent Ksh ', p_amount, ' to ', p_recipientEmail));
+  INSERT INTO notifications (userId, message)
+    VALUES (recipientId, CONCAT('You received Ksh ', p_amount, ' from an account'));
+END$$
 
--- Sample data for loans
-INSERT INTO loans (customer_id, account_id, loan_amount, interest_rate, term_months, status) VALUES
-(1, 1, 10000.00, 5.50, 24, 'Approved'),
-(2, 3, 25000.00, 6.25, 36, 'Pending'),
-(3, 4, 15000.00, 5.75, 24, 'Approved');
+-- Procedure for updating user details
+CREATE PROCEDURE updateUserDetails(
+  IN p_userId INT,
+  IN p_name VARCHAR(100),
+  IN p_phone VARCHAR(20),
+  IN p_idNumber VARCHAR(50)
+)
+BEGIN
+  UPDATE users SET name = p_name, phone = p_phone, idNumber = p_idNumber WHERE id = p_userId;
+  INSERT INTO notifications (userId, message)
+    VALUES (p_userId, 'Your profile details have been updated.');
+END$$
 
--- Sample data for loan payments
-INSERT INTO loan_payments (loan_id, payment_amount) VALUES
-(1, 450.00),
-(1, 450.00),
-(3, 675.00);
+-- Employee-specific Procedures
 
--- Sample data for account queries
-INSERT INTO account_queries (customer_id, subject, description, status) VALUES
-(1, 'Card Issue', 'Unable to use debit card at ATM', 'Open'),
-(2, 'Online Banking', 'Reset password request', 'Resolved'),
-(3, 'Loan Inquiry', 'Information about personal loans', 'In Progress');
+-- Procedure for an employee to approve a loan
+CREATE PROCEDURE approveLoanProc(
+  IN p_loanId INT
+)
+BEGIN
+  DECLARE userId INT;
+  UPDATE loans SET status = 'Approved' WHERE id = p_loanId;
+  SELECT userId INTO userId FROM loans WHERE id = p_loanId;
+  INSERT INTO notifications (userId, message)
+    VALUES (userId, CONCAT('Your loan (ID: ', p_loanId, ') has been approved.'));
+END$$
 
--- 1. Select all customers with their basic information
-SELECT 
-    customer_id,
-    CONCAT(first_name, ' ', last_name) as full_name,
-    email,
-    phone_number,
-    CONCAT(city, ', ', state) as location,
-    date_of_birth
-FROM customers;
+-- Procedure for an employee to reject a loan
+CREATE PROCEDURE rejectLoanProc(
+  IN p_loanId INT
+)
+BEGIN
+  DECLARE userId INT;
+  UPDATE loans SET status = 'Rejected' WHERE id = p_loanId;
+  SELECT userId INTO userId FROM loans WHERE id = p_loanId;
+  INSERT INTO notifications (userId, message)
+    VALUES (userId, CONCAT('Your loan (ID: ', p_loanId, ') has been rejected.'));
+END$$
 
--- 2. Select all accounts with customer information
-SELECT 
-    a.account_id,
-    CONCAT(c.first_name, ' ', c.last_name) as customer_name,
-    a.account_type,
-    a.balance,
-    a.status,
-    a.created_at
-FROM accounts a
-JOIN customers c ON a.customer_id = c.customer_id;
+-- Procedure for generating a monthly report (example: transactions summary)
+CREATE PROCEDURE generateMonthlyReport(
+  IN p_month INT,
+  IN p_year INT
+)
+BEGIN
+  SELECT 
+    COUNT(*) AS totalTransactions,
+    SUM(CASE WHEN type = 'Deposit' THEN amount ELSE 0 END) AS totalDeposits,
+    SUM(CASE WHEN type = 'Withdrawal' THEN amount ELSE 0 END) AS totalWithdrawals,
+    SUM(amount) AS totalAmount
+  FROM transactions
+  WHERE MONTH(date) = p_month AND YEAR(date) = p_year;
+END$$
 
--- 3. Select all transactions with account and customer details
-SELECT 
-    t.transaction_id,
-    CONCAT(c.first_name, ' ', c.last_name) as customer_name,
-    a.account_type,
-      t.transaction_type,
-      t.amount,
-      t.description,
-      t.transaction_date
-FROM transactions t
-JOIN accounts a ON t.account_id = a.account_id
-JOIN customers c ON a.customer_id = c.customer_id;
+-- Procedure to fetch all customers (for employee operations)
+CREATE PROCEDURE getAllCustomers()
+BEGIN
+  SELECT id, name, email, phone, idNumber, balance FROM users WHERE role = 'customer';
+END$$
 
--- 4. Select all loans with customer details
-SELECT 
-    l.loan_id,
-    CONCAT(c.first_name, ' ', c.last_name) as customer_name,
-    l.loan_amount,
-    l.interest_rate,
-    l.term_months,
-    l.status,
-    l.application_date
-FROM loans l
-JOIN customers c ON l.customer_id = c.customer_id;
-
--- 5. Select all loan payments with loan and customer details
-SELECT 
-    lp.payment_id,
-    CONCAT(c.first_name, ' ', c.last_name) as customer_name,
-    l.loan_amount,
-    lp.payment_amount,
-    lp.payment_date
-FROM loan_payments lp
-JOIN loans l ON lp.loan_id = l.loan_id
-JOIN customers c ON l.customer_id = c.customer_id;
-SELECT 
-    aq.query_id,
-    CONCAT(c.first_name, ' ', c.last_name) as customer_name,
-    aq.subject,
-    aq.description,
-    aq.status,
-    aq.created_at,
-    aq.resolved_at
-FROM account_queries aq
-JOIN customers c ON aq.customer_id = c.customer_id;
-
--- Additional useful queries
-
--- Get account balance summary by customer
-SELECT 
-    CONCAT(c.first_name, ' ', c.last_name) as customer_name,
-    COUNT(a.account_id) as number_of_accounts,
-    SUM(a.balance) as total_balance
-FROM customers c
-LEFT JOIN accounts a ON c.customer_id = a.customer_id
-GROUP BY c.customer_id;
-
--- Get loan summary by customer
-SELECT 
-    CONCAT(c.first_name, ' ', c.last_name) as customer_name,
-    COUNT(l.loan_id) as number_of_loans,
-    SUM(l.loan_amount) as total_loan_amount,
-    AVG(l.interest_rate) as average_interest_rate
-FROM customers c
-LEFT JOIN loans l ON c.customer_id = l.customer_id
-GROUP BY c.customer_id;
-
--- Check existing indexes on customers table
-SHOW INDEX FROM customers;
-
--- Drop the existing index if it exists
-DROP INDEX idq_customer_email ON customers;
-
--- Create the index again
-CREATE INDEX idq_customer_email ON customers(email);
-
-SHOW INDEX FROM accounts;
-DROP INDEX idy_account_customer ON accounts;
-CREATE INDEX idy_account_customer ON accounts(customer_id);
-
-SHOW INDEX FROM transactions;
-DROP INDEX idz_transaction_account ON transactions;
-CREATE INDEX idz_transaction_account ON transactions(account_id);
-
-SHOW INDEX FROM loans;
-DROP INDEX idm_loan_customer ON loans;
-CREATE INDEX idm_loans_customer ON loans(customer_id);
-
-SHOW INDEX FROM account_queries;
-DROP INDEX idn_account_queries_customer ON account_queries;
-CREATE INDEX idn_account_queries_customer ON account_queries(customer_id);
+DELIMITER ;

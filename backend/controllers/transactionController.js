@@ -1,140 +1,90 @@
-const TransactionPrototype = require('../prototype/transaction.prototype');
+const pool = require('../config/databaseConfig');
+const TransactionPrototype = require('../prototypes/transactionPrototype');
 
-// Utility function for error handling
-const handleError = (res, err, message) => {
-  if (!err) {
-    return res.status(500).send({ message: message || 'An unexpected error occurred.' });
+async function deposit(req, res) {
+  try {
+    const { amount } = req.body;
+    const userId = req.user.id;
+    if (!amount || amount <= 0) return res.status(400).json({ message: "Invalid deposit amount" });
+    
+    await pool.execute("UPDATE users SET balance = balance + ? WHERE id = ?", [amount, userId]);
+    await TransactionPrototype.create(userId, 'Deposit', amount);
+    await pool.execute("INSERT INTO notifications (userId, message) VALUES (?, ?)", [userId, `You have deposited Ksh ${amount}.`]);
+    res.json({ message: "Deposit successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Deposit error" });
   }
+}
 
-  if (err.kind === 'not_found') {
-    return res.status(404).send({ message: message || 'Resource not found.' });
+async function withdraw(req, res) {
+  try {
+    const { amount } = req.body;
+    const userId = req.user.id;
+    if (!amount || amount <= 0) return res.status(400).json({ message: "Invalid withdrawal amount" });
+    
+    const [rows] = await pool.execute("SELECT balance FROM users WHERE id = ?", [userId]);
+    if (rows[0].balance < amount) return res.status(400).json({ message: "Insufficient balance" });
+    
+    await pool.execute("UPDATE users SET balance = balance - ? WHERE id = ?", [amount, userId]);
+    await TransactionPrototype.create(userId, 'Withdrawal', amount);
+    await pool.execute("INSERT INTO notifications (userId, message) VALUES (?, ?)", [userId, `You have withdrawn Ksh ${amount}.`]);
+    res.json({ message: "Withdrawal successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Withdrawal error" });
   }
+}
 
-  return res.status(500).send({ message: err.message || message || 'Server error.' });
-};
-
-// Retrieve all outgoing transactions for an account
-exports.getAllOutgoing = (req, res) => {
-  const accountID = req.params.id;
-
-  if (!accountID) {
-    return res.status(400).send({ message: 'Account ID is required.' });
+async function sendMoney(req, res) {
+  try {
+    const { recipientEmail, amount } = req.body;
+    const senderId = req.user.id;
+    if (!recipientEmail || !amount || amount <= 0) return res.status(400).json({ message: "Invalid recipient or amount" });
+    
+    const [recipientRows] = await pool.execute("SELECT * FROM users WHERE email = ?", [recipientEmail]);
+    if (!recipientRows.length) return res.status(404).json({ message: "Recipient not found" });
+    const recipient = recipientRows[0];
+    
+    const [senderRows] = await pool.execute("SELECT balance FROM users WHERE id = ?", [senderId]);
+    if (senderRows[0].balance < amount) return res.status(400).json({ message: "Insufficient balance" });
+    
+    await pool.execute("UPDATE users SET balance = balance - ? WHERE id = ?", [amount, senderId]);
+    await pool.execute("UPDATE users SET balance = balance + ? WHERE id = ?", [amount, recipient.id]);
+    
+    await TransactionPrototype.create(senderId, 'Send', amount);
+    await TransactionPrototype.create(recipient.id, 'Receive', amount);
+    
+    await pool.execute("INSERT INTO notifications (userId, message) VALUES (?, ?)", [senderId, `You sent Ksh ${amount} to ${recipientEmail}.`]);
+    await pool.execute("INSERT INTO notifications (userId, message) VALUES (?, ?)", [recipient.id, `You received Ksh ${amount} from an account.`]);
+    
+    res.json({ message: `Sent Ksh ${amount} successfully` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Send money error" });
   }
-
-  TransactionPrototype.getAllOutgoing(accountID, (err, data) => {
-    if (err) return handleError(res, err, `Error retrieving outgoing transactions for account ${accountID}`);
-    res.send(data);
-  });
-};
-
-// Retrieve all incoming transactions for an account
-exports.getAllIncoming = (req, res) => {
-  const accountID = req.params.id;
-
-  if (!accountID) {
-    return res.status(400).send({ message: 'Account ID is required.' });
+}
+// Function to get transactions for the authenticated user
+async function getTransactions(req, res) {
+  try {
+    const userId = req.user.id;
+    const [rows] = await pool.execute("SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC", [userId]);
+    res.json(rows);
+  } catch (err) {
+    console.error("Error fetching transactions:", err);
+    res.status(500).json({ message: "Error fetching transactions" });
   }
+}
 
-  TransactionPrototype.getAllIncoming(accountID, (err, data) => {
-    if (err) return handleError(res, err, `Error retrieving incoming transactions for account ${accountID}`);
-    res.send(data);
-  });
-};
-
-// Retrieve a transaction from an account by ID to another account by ID
-exports.findFromTo = (req, res) => {
-  const { from, to } = req.params;
-
-  if (!from || !to) {
-    return res.status(400).send({ message: 'Both fromAccount and toAccount are required.' });
+// Function to get all transactions (for employee dashboard)
+async function getAllTransactions(req, res) {
+  try {
+    const [rows] = await pool.execute("SELECT * FROM transactions ORDER BY date DESC");
+    res.json(rows);
+  } catch (err) {
+    console.error("Error fetching all transactions:", err);
+    res.status(500).json({ message: "Error fetching transactions" });
   }
+}
 
-  TransactionPrototype.findFromTo(from, to, (err, data) => {
-    if (err) return handleError(res, err, `No transaction found from account ${from} to ${to}.`);
-    res.send(data);
-  });
-};
-
-// Create and save a new transaction
-exports.create = (req, res) => {
-  if (!req.body) {
-    return res.status(400).send({ message: 'Request body cannot be empty.' });
-  }
-
-  const { fromAccountID, toAccountID, amount, remarks } = req.body;
-
-  if (!fromAccountID || !toAccountID || !amount || !remarks) {
-    return res.status(400).send({ message: 'All fields (fromAccountID, toAccountID, amount, remarks) are required.' });
-  }
-
-  const transaction = { FromAccount: fromAccountID, ToAccount: toAccountID, Amount: amount, Remark: remarks };
-
-  TransactionPrototype.create(transaction, (err, data) => {
-    if (err) return handleError(res, err, 'Error creating the transaction.');
-    res.status(201).send(data);
-  });
-};
-
-// Retrieve all transactions (for admins or reporting)
-exports.findAll = (req, res) => {
-  TransactionPrototype.getAll(null, (err, data) => {
-    if (err) return handleError(res, err, 'Error retrieving transactions.');
-    res.send(data);
-  });
-};
-
-// Get branch-specific incoming transactions report
-exports.getBranchInReport = (req, res) => {
-  const branchID = req.user?.BranchID;
-
-  if (!branchID) {
-    return res.status(400).send({ message: 'Branch ID is required.' });
-  }
-
-  TransactionPrototype.getBranchInReport(branchID, (err, data) => {
-    if (err) return handleError(res, err, 'Error retrieving branch incoming transactions report.');
-    res.send(data);
-  });
-};
-
-// Get count of incoming transactions for a branch
-exports.getBranchInCount = (req, res) => {
-  const branchID = req.user?.BranchID;
-
-  if (!branchID) {
-    return res.status(400).send({ message: 'Branch ID is required.' });
-  }
-
-  TransactionPrototype.getBranchInCount(branchID, (err, data) => {
-    if (err) return handleError(res, err, 'Error retrieving branch incoming transaction count.');
-    res.send(data);
-  });
-};
-
-// Get branch-specific outgoing transactions report
-exports.getBranchOutReport = (req, res) => {
-  const branchID = req.user?.BranchID;
-
-  if (!branchID) {
-    return res.status(400).send({ message: 'Branch ID is required.' });
-  }
-
-  TransactionPrototype.getBranchOutReport(branchID, (err, data) => {
-    if (err) return handleError(res, err, 'Error retrieving branch outgoing transactions report.');
-    res.send(data);
-  });
-};
-
-// Get count of outgoing transactions for a branch
-exports.getBranchOutCount = (req, res) => {
-  const branchID = req.user?.BranchID;
-
-  if (!branchID) {
-    return res.status(400).send({ message: 'Branch ID is required.' });
-  }
-
-  TransactionPrototype.getBranchOutCount(branchID, (err, data) => {
-    if (err) return handleError(res, err, 'Error retrieving branch outgoing transaction count.');
-    res.send(data);
-  });
-};
+module.exports = { deposit, withdraw, sendMoney, getTransactions, getAllTransactions };

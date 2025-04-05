@@ -1,128 +1,103 @@
-const OnlineLoanModel = require('../prototype/loan.prototype');
+const LoanPrototype = require('../prototypes/loanPrototype');
+const UserPrototype = require('../prototypes/userPrototype');
 
-// Utility function to handle errors consistently
-const handleError = (res, err) => {
-  if (!err || !err.kind) {
-    return res.status(500).send({ message: 'An unexpected error occurred.' });
+async function applyLoan(req, res) {
+  try {
+    const { loanAmount, purpose } = req.body;
+    const userId = req.user.id;
+    console.log(`applyLoan called for user ${userId} with data:`, { loanAmount, purpose });
+    
+    if (!loanAmount || loanAmount <= 0 || !purpose) {
+      console.warn(`Invalid loan data for user ${userId}:`, { loanAmount, purpose });
+      return res.status(400).json({ message: "Invalid loan data" });
+    }
+    
+    await LoanPrototype.applyLoan(userId, loanAmount, purpose);
+    console.log(`Loan application submitted successfully for user ${userId}`);
+    res.json({ message: "Loan application submitted" });
+  } catch (err) {
+    console.error("Error in applyLoan:", err);
+    res.status(500).json({ message: "Error applying for loan" });
   }
+}
 
-  const errorMessages = {
-    not_found: { status: 404, message: 'Not found.' },
-    already_paid: { status: 400, message: 'Already paid.' },
-    access_denied: { status: 401, message: 'Access denied.' }
-  };
-
-  const response = errorMessages[err.kind] || { status: 500, message: 'Some error occurred.' };
-  return res.status(response.status).send({ message: err.message || response.message });
-};
-
-// Retrieve online loans for a customer
-exports.getCustomerOnlineLoans = (req, res) => {
-  console.log('Fetching online loans for customer:', req.user.CustomerID);
-
-  if (!req.user || !req.user.CustomerID) {
-    return res.status(400).send({ message: 'Invalid or missing Customer ID.' });
+async function getLoans(req, res) {
+  try {
+    const userId = req.user.id;
+    console.log(`getLoans called for user ${userId}`);
+    const loans = await LoanPrototype.getLoansByUser(userId);
+    console.log(`Found ${loans.length} loans for user ${userId}`);
+    res.json(loans);
+  } catch (err) {
+    console.error(`Error fetching loans for user ${req.user.id}:`, err);
+    res.status(500).json({ message: "Error fetching loans" });
   }
+}
 
-  OnlineLoanModel.getAll(req.user.CustomerID, (err, data) => {
-    if (err) return handleError(res, err);
-    res.send(data);
-  });
-};
-
-// Function to calculate interest rate based on loan amount and duration
-const calculateInterestRate = (amount, duration) => {
-  let interestRate = 20;
-
-  if (amount > 10000) interestRate += 5;
-  if (amount > 100000) interestRate += 10;
-  if (amount > 1000000) interestRate += 15;
-  if (duration > 12) interestRate += 5;
-  if (duration > 24) interestRate += 10;
-  if (duration > 36) interestRate += 15;
-
-  return interestRate;  // Removed random factor for consistency
-};
-
-// Create a new online loan
-exports.createOnlineLoan = (req, res) => {
-  if (!req.body || !req.body.loan) {
-    return res.status(400).send({ message: 'Loan details are required.' });
+async function getAllPendingLoans(req, res) {
+  try {
+    console.log("getAllPendingLoans called");
+    const pendingLoans = await LoanPrototype.getAllPendingLoans();
+    console.log(`Found ${pendingLoans.length} pending loans`);
+    res.json(pendingLoans);
+  } catch (err) {
+    console.error("Error fetching pending loans:", err);
+    res.status(500).json({ message: "Error fetching pending loans" });
   }
+}
 
-  if (!req.user || req.user.role !== 'customer') {
-    return res.status(403).send({ message: 'Unauthorized request.' });
+async function approveLoan(req, res) {
+  try {
+    const { loanId } = req.body;
+    if (!loanId) {
+      return res.status(400).json({ message: "Loan ID is required" });
+    }
+
+    // Fetch loan details first to retrieve userId and amount
+    const existingLoan = await LoanPrototype.findById(loanId);
+    if (!existingLoan) {
+      return res.status(404).json({ message: "Loan not found" });
+    }
+    
+    // Optional: Check if the loan is still pending approval
+    if (existingLoan.status !== "Pending") {
+      return res.status(400).json({ message: "Loan is not pending approval" });
+    }
+
+    // Update the loan status to "approved"
+    await LoanPrototype.updateLoanStatus(loanId, "approved");
+
+    // Add the approved loan amount to the user's balance
+    await UserPrototype.addToBalance(existingLoan.userId, existingLoan.amount);
+
+    console.log(`Loan ${loanId} approved successfully, and user balance updated`);
+    res.json({ message: "Loan approved and balance updated successfully" });
+  } catch (error) {
+    console.error("Error approving loan:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
+}
 
-  const { amount, duration, savingsAccountID, fdAccountID } = req.body.loan;
+async function rejectLoan(req, res) {
+  try {
+    const { loanId } = req.body;
+    if (!loanId) {
+      return res.status(400).json({ message: "Loan ID is required" });
+    }
+    
+    // Check if the loan exists
+    const existingLoan = await LoanPrototype.findById(loanId);
+    if (!existingLoan) {
+      return res.status(404).json({ message: "Loan not found" });
+    }
 
-  if (!amount || !duration || !savingsAccountID || !fdAccountID) {
-    return res.status(400).send({ message: 'All loan fields are required.' });
+    // Update the loan status to 'rejected'
+    await LoanPrototype.updateLoanStatus(loanId, "rejected");
+    res.json({ message: "Loan rejected successfully" });
+  } catch (error) {
+    console.error("Error rejecting loan:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
+}
 
-  const onlineLoan = {
-    CustomerID: req.user.CustomerID,
-    Amount: amount,
-    Duration: duration,
-    SavingsAccountID: savingsAccountID,
-    FDAccountID: fdAccountID,
-    InterestRate: calculateInterestRate(amount, duration),
-  };
-
-  console.log('Creating loan:', onlineLoan);
-
-  OnlineLoanModel.create(onlineLoan, (err, data) => {
-    if (err) return handleError(res, err);
-    res.status(201).send(data);
-  });
-};
-
-// Retrieve account installments
-exports.getAccountInstallments = (req, res) => {
-  const LoanID = req.params.LoanID;
-
-  if (!LoanID) {
-    return res.status(400).send({ message: 'Loan ID is required.' });
-  }
-
-  OnlineLoanModel.getInstallmentsByAccountID(LoanID, (err, data) => {
-    if (err) return handleError(res, err);
-    res.send(data);
-  });
-};
-
-// Retrieve unpaid online installments
-exports.getUnpaidOnlineInstallments = (req, res) => {
-  OnlineLoanModel.getUnpaidOnlineInstallments((err, data) => {
-    if (err) return handleError(res, err);
-    res.send(data);
-  });
-};
-
-// Retrieve a specific installment
-exports.getInstallment = (req, res) => {
-  const installmentID = req.params.installmentID;
-
-  if (!installmentID) {
-    return res.status(400).send({ message: 'Installment ID is required.' });
-  }
-
-  OnlineLoanModel.getInstallmentByID(installmentID, (err, data) => {
-    if (err) return handleError(res, err);
-    res.send(data);
-  });
-};
-
-// Pay an installment
-exports.payInstallment = (req, res) => {
-  const installmentID = req.params.installmentID;
-
-  if (!installmentID) {
-    return res.status(400).send({ message: 'Installment ID is required.' });
-  }
-
-  OnlineLoanModel.payInstallment(installmentID, (err, data) => {
-    if (err) return handleError(res, err);
-    res.send(data);
-  });
-};
+module.exports = { applyLoan, getLoans, getAllPendingLoans, approveLoan, rejectLoan };

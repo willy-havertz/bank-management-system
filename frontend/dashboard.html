@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Customer Dashboard - Elite Commerce Bank</title>
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/4834/4834675.png" type="image/png" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/dashboard.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-light">
+  <div class="d-flex" id="dashboardContainer">
+    <!-- Sidebar -->
+    <nav class="sidebar p-4" id="sidebar">
+      <div class="mb-4">
+        <h2 class="brand">💳 Elite Commerce Bank</h2>
+      </div>
+      <ul class="nav flex-column">
+        <li class="nav-item" onclick="showSection('overviewSection')">
+          <a class="nav-link active" href="javascript:void(0)">Dashboard</a>
+        </li>
+        <li class="nav-item" onclick="showSection('depositSection')">
+          <a class="nav-link" href="javascript:void(0)">Deposit/Withdraw</a>
+        </li>
+        <li class="nav-item" onclick="showSection('sendMoneySection')">
+          <a class="nav-link" href="javascript:void(0)">Send Money</a>
+        </li>
+        <li class="nav-item" onclick="showSection('transactionsSection')">
+          <a class="nav-link" href="javascript:void(0)">Transaction History</a>
+        </li>
+        <li class="nav-item" onclick="showSection('loansSection')">
+          <a class="nav-link" href="javascript:void(0)">Loans</a>
+        </li>
+      </ul>
+      <div class="mt-auto">
+        <button class="btn btn-outline-light w-100" onclick="showSupport()">Support</button>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="p-4 w-100">
+      <header class="d-flex justify-content-between align-items-center mb-4">
+        <h1 id="pageTitle">Overview</h1>
+        <div class="profile d-flex align-items-center">
+          <button id="notificationBtn" class="btn btn-light me-3" onclick="showNotifications()">🔔</button>
+          <img id="profileImg" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Profile" class="profile-img" data-bs-toggle="modal" data-bs-target="#profileModal">
+        </div>
+      </header>
+
+      <!-- Overview Section -->
+      <section id="overviewSection">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card card-custom text-white mb-4">
+              <h4>💳 Elite Pay</h4>
+              <p>•••• •••• •••• 5610</p>
+              <p><small>VALID THRU:</small> 05/27</p>
+              <p>CARD HOLDER: <strong id="cardHolderName"></strong></p>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="box p-4 mb-4">
+              <h3>User Details</h3>
+              <p>Balance: <span class="text-primary" id="balance"></span></p>
+              <p>Phone: <span id="phone"></span></p>
+              <p>ID Number: <span id="idNumber"></span></p>
+              <p>Networth: <span id="networth"></span></p>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="box p-4 mb-4">
+              <h4>Credit Usage</h4>
+              <canvas id="creditChart"></canvas>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="box p-4 mb-4">
+              <h4>Spending Insights</h4>
+              <canvas id="spendingChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Deposit/Withdraw Section -->
+      <section id="depositSection" class="d-none">
+        <h3>Deposit / Withdraw</h3>
+        <form id="depositForm" class="mb-3">
+          <div class="mb-3">
+            <label for="depositAmount" class="form-label">Deposit Amount (Ksh):</label>
+            <input type="number" id="depositAmount" class="form-control" placeholder="Enter deposit amount" required>
+          </div>
+          <button type="submit" class="btn btn-success w-100">Deposit</button>
+        </form>
+        <form id="withdrawForm">
+          <div class="mb-3">
+            <label for="withdrawAmount" class="form-label">Withdraw Amount (Ksh):</label>
+            <input type="number" id="withdrawAmount" class="form-control" placeholder="Enter withdrawal amount" required>
+          </div>
+          <button type="submit" class="btn btn-danger w-100">Withdraw</button>
+        </form>
+      </section>
+
+      <!-- Send Money Section -->
+      <section id="sendMoneySection" class="d-none">
+        <h3>Send Money</h3>
+        <form id="sendMoneyForm">
+          <div class="mb-3">
+            <label for="recipientEmail" class="form-label">Recipient Email:</label>
+            <input type="email" id="recipientEmail" class="form-control" placeholder="Enter recipient email" required>
+          </div>
+          <div class="mb-3">
+            <label for="sendAmount" class="form-label">Amount (Ksh):</label>
+            <input type="number" id="sendAmount" class="form-control" placeholder="Enter amount" required>
+          </div>
+          <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#confirmSendModal">
+            Send Money
+          </button>
+        </form>
+      </section>
+
+      <!-- Transaction History Section -->
+      <section id="transactionsSection" class="d-none">
+        <h3>Transaction History</h3>
+        <ul class="list-group" id="transactionList">
+          <li class="list-group-item text-muted">No transactions yet.</li>
+        </ul>
+      </section>
+
+      <!-- Loans Section -->
+      <section id="loansSection" class="d-none">
+        <h3>Loan Management</h3>
+        <form id="loanForm" class="mb-3">
+          <div class="mb-3">
+            <label for="loanAmount" class="form-label">Loan Amount (Ksh):</label>
+            <input type="number" id="loanAmount" class="form-control" placeholder="Enter desired loan amount" required>
+          </div>
+          <div class="mb-3">
+            <label for="loanPurpose" class="form-label">Purpose:</label>
+            <input type="text" id="loanPurpose" class="form-control" placeholder="Enter loan purpose" required>
+          </div>
+          <button type="submit" class="btn btn-warning">Apply for Loan</button>
+        </form>
+        <div id="loanHistory">
+          <h4>Your Loan History</h4>
+          <div class="accordion" id="loanAccordion">
+            <p class="text-muted text-center mt-3">No loans applied yet.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Confirmation Modal for Sending Money -->
+  <div class="modal fade" id="confirmSendModal" tabindex="-1" aria-labelledby="confirmSendLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="confirmSendLabel">Confirm Transaction</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to send this money?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="confirmSendBtn" class="btn btn-primary">Yes, Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Picture Modal -->
+  <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="profile-picture-form" enctype="multipart/form-data">
+          <label for="profile-pic" class="form-label">Change Profile Picture:</label>
+          <input type="file" id="profile-pic" name="profilePic" class="form-control" accept="image/*" required>
+          <button type="submit" class="btn btn-primary mt-3">Change Profile</button>
+        </form>
+        <!-- Display Uploaded Profile Image -->
+        <img id="profile-image" src="./uploads/Screenshot (1).png" alt="Profile Picture" class="img-fluid mt-4" width="150">
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications Modal -->
+  <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="notificationsModalLabel">Notifications</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="notificationsBody">
+          <p class="text-muted">No new notifications.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container for Feedback -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto" id="toastTitle"></strong>
+        <small>Now</small>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body" id="toastBody"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
