@@ -1,0 +1,158 @@
+/* Employee Auth / Dashboard Global Styles */
+.auth-body {
+    background: linear-gradient(135deg, #0a0a0a, #1f1f1f);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  /* Auth Card for Employee Login/Signup */
+  .auth-card {
+    width: 100%;
+    max-width: 500px;
+    border: none;
+    border-radius: 15px;
+    background: #212529;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .auth-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9);
+  }
+  
+  /* Bank Name Header Styling */
+  .bank-name {
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: #00adb5;
+    margin-bottom: 10px;
+  }
+  
+  .bank-name span {
+    color: #ff5722;
+  }
+  
+  /* Navigation Tabs Styling */
+  .nav-tabs .nav-link {
+    color: #aaa;
+    transition: color 0.3s ease, border-bottom 0.3s ease;
+  }
+  
+  .nav-tabs .nav-link.active {
+    color: #00adb5;
+    border-bottom: 2px solid #00adb5;
+  }
+  
+  /* Form Labels and Controls */
+  .form-label {
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+  
+  .form-control {
+    background: #343a40;
+    color: #fff;
+    border: 1px solid #495057;
+    border-radius: 10px;
+    padding: 10px 15px;
+    transition: border-color 0.3s ease;
+  }
+  
+  .form-control:focus {
+    border-color: #00adb5;
+    box-shadow: 0 0 5px rgba(0, 173, 181, 0.5);
+  }
+  
+  /* Buttons */
+  .btn-primary {
+    background: #00adb5;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  
+  .btn-primary:hover {
+    background: #007f89;
+    transform: scale(1.02);
+  }
+  
+  .btn-success {
+    background: #28a745;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  
+  .btn-success:hover {
+    background: #218838;
+    transform: scale(1.02);
+  }
+  
+  /* Home Link */
+  .home-link {
+    color: #00adb5;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  .home-link:hover {
+    color: #ff5722;
+  }
+  
+/* Toast Container */
+#liveToast {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: opacity 0.3s ease-in-out;
+  }
+  
+  /* Toast Header */
+  #liveToast .toast-header {
+    background-color: #00796B; /* Teal background */
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.75rem 1rem;
+  }
+  
+  /* Toast Body */
+  #liveToast .toast-body {
+    font-size: 1rem;
+    color: #b30000;
+    text-align: center;
+    padding: 1rem;
+    background-color: #e0f2f1;
+    border-top: 1px solid #b2dfdb;
+    border-radius: 0 0 8px 8px;
+  }
+  
+  
+  /* Responsive Adjustments */
+  @media (max-width: 576px) {
+    .auth-card {
+      max-width: 90%;
+    }
+    .bank-name {
+      font-size: 1.8rem;
+    }
+    .form-control {
+      padding: 8px 12px;
+    }
+    .btn-primary, .btn-success {
+      padding: 10px;
+    }
+  }
+  
