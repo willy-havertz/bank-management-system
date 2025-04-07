@@ -1,57 +1,75 @@
-const multer = require('multer');
 const path = require('path');
-const pool = require('../config/databaseConfig');
+const { v4: uuidv4 } = require('uuid');
+const pool = require('../config/databaseConfig'); // Supabase client
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, './uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
-});
+// Upload profile picture to Supabase Storage
+async function uploadProfilePicture(req, res) {
+  try {
+    const userId = req.user.id;
+    const file = req.file;
 
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const fileTypes = /jpeg|jpg|png|gif/;
-    const mimetype = fileTypes.test(file.mimetype);
-    const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
-    if (mimetype && extname) return cb(null, true);
-    cb(new Error("Only image files (jpeg, jpg, png, gif) are allowed"));
-  }
-}).single('profilePic');
-
-function uploadProfilePicture(req, res) {
-  upload(req, res, async (err) => {
-    if (err) return res.status(400).json({ message: err.message });
-    try {
-      const userId = req.user.id;
-      const profilePic = req.file.filename;
-      await pool.execute("UPDATE users SET profile_picture = ? WHERE id = ?", [profilePic, userId]);
-      res.json({ message: "Profile picture updated", filename: profilePic });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Database error" });
+    if (!file) {
+      return res.status(400).json({ message: "No file uploaded" });
     }
-  });
+
+    const extension = path.extname(file.originalname).toLowerCase();
+    const allowedTypes = ['.jpeg', '.jpg', '.png', '.gif'];
+    if (!allowedTypes.includes(extension)) {
+      return res.status(400).json({ message: "Invalid file type" });
+    }
+
+    const filename = `${uuidv4()}${extension}`;
+
+    // Upload to Supabase Storage (bucket name: 'profile-pictures')
+    const { error: uploadError } = await pool.storage
+      .from('profile-pictures')
+      .upload(filename, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true
+      });
+
+    if (uploadError) throw uploadError;
+
+    // Optional: make the image publicly accessible and get public URL
+    const { data: publicUrlData } = pool.storage
+      .from('profile-pictures')
+      .getPublicUrl(filename);
+
+    const profilePicUrl = publicUrlData.publicUrl;
+
+    // Update DB
+    const { error: dbError } = await pool
+      .from('users')
+      .update({ profile_picture: profilePicUrl })
+      .eq('id', userId);
+
+    if (dbError) throw dbError;
+
+    res.json({ message: "Profile picture updated", url: profilePicUrl });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Upload error" });
+  }
 }
 
+// Get profile for authenticated user
 async function getUserProfile(req, res) {
   try {
-    const userId = req.user.id; // Assumes your authentication middleware sets req.user
-    const [rows] = await pool.execute("SELECT * FROM users WHERE id = ?", [userId]);
-    if (rows.length) {
-      res.json(rows[0]);
-    } else {
-      res.status(404).json({ message: "User not found" });
-    }
+    const userId = req.user.id;
+
+    const { data, error } = await pool
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) return res.status(404).json({ message: "User not found" });
+
+    res.json(data);
   } catch (error) {
     console.error("Error fetching user profile:", error);
-    res.status(500).json({ message: "Database error" });
+    res.status(500).json({ message: "Error fetching user profile" });
   }
 }
-
 
 module.exports = { uploadProfilePicture, getUserProfile };

@@ -40,9 +40,18 @@ app.use((err, req, res, next) => {
 // Test database connection and start server
 (async () => {
   try {
-    const connection = await pool.getConnection();
+    // Try a simple query to confirm DB connectivity
+    const { data, error } = await pool
+      .from('users')
+      .select('id')
+      .limit(1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
     console.log("Connected to the database successfully!");
-    connection.release();
+
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   } catch (error) {
@@ -50,3 +59,4 @@ app.use((err, req, res, next) => {
     process.exit(1);
   }
 })();
+

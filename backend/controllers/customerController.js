@@ -2,11 +2,20 @@ const pool = require('../config/databaseConfig');
 
 async function getCustomerAccounts(req, res) {
   try {
-    const [rows] = await pool.execute("SELECT * FROM users WHERE role = ?", ["customer"]);
-    res.json(rows);
-  } catch (error) {
-    console.error("Error fetching customer accounts:", error);
-    res.status(500).json({ message: "Database error" });
+    const { data, error } = await pool
+      .from('users')
+      .select('*')
+      .eq('role', 'customer');
+
+    if (error) {
+      console.error("Supabase error:", error);
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 }
 
