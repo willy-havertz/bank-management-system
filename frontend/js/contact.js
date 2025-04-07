@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000';
+const API_URL = 'https://bank-management-system-backend.onrender.com';
 
 document.getElementById('contact-form').addEventListener('submit', async (e) => {
   e.preventDefault();
