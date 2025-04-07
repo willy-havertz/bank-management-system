@@ -11,6 +11,7 @@ const transporter = nodemailer.createTransport({
 
 async function sendResetEmail(email, token) {
  const resetLink = `${process.env.BASE_URL}/public/reset.html?token=${token}`;
+
   try {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
