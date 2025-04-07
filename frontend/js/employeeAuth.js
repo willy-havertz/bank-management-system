@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000';
+const API_URL = 'https://bank-management-system-backend.onrender.com';
 
 // Utility function to disable form inputs during processing
 function setFormDisabled(formId, disabled) {
