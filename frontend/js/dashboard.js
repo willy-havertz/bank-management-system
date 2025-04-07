@@ -6,6 +6,11 @@ if (!token || role !== "customer") {
   window.location.href = "auth.html";
 }
 
+// Global variables to hold chart instances and user balance
+let creditChart;
+let spendingChart;
+let userBalance = 0;
+
 // Initialize the dashboard after DOM load
 document.addEventListener("DOMContentLoaded", () => {
   showSection("overviewSection");
@@ -56,7 +61,9 @@ async function initializeDashboard() {
 
     if (response.ok) {
       document.getElementById("cardHolderName").textContent = data.name;
-      document.getElementById("balance").textContent = `Ksh ${parseFloat(data.balance).toFixed(2)}`;
+      // Update balance element and store balance globally
+      userBalance = parseFloat(data.balance);
+      document.getElementById("balance").textContent = `Ksh ${userBalance.toFixed(2)}`;
       document.getElementById("phone").textContent = data.phone;
       document.getElementById("idNumber").textContent = data.idNumber;
       document.getElementById("networth").textContent = `Ksh ${parseFloat(data.networth).toFixed(2)}`;
@@ -153,7 +160,7 @@ async function processTransaction(type, amount) {
     showToast("Success", result.message || `${type === "deposit" ? "Deposit" : "Withdrawal"} successful`, 3000);
     initializeDashboard();
     loadTransactions();
-    updateCharts();
+    renderCharts(); // Re-render charts after transaction
   } catch (error) {
     console.error(error);
     showToast("Error", "Transaction failed.", 3000);
@@ -202,7 +209,6 @@ document.getElementById("confirmSendBtn").addEventListener("click", async () => 
 async function renderCharts() {
   // Render Credit Doughnut Chart with dynamic credit data
   try {
-    // Fetch dynamic credit data from your backend
     const creditResponse = await fetch(`${API_URL}/api/dashboard-data/credit-data`, {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -211,13 +217,20 @@ async function renderCharts() {
     
     const creditCtx = document.getElementById("creditChart").getContext("2d");
     
-    // Create a new Chart.js doughnut chart with the dynamic data
+    // Destroy the existing credit chart instance if it exists
+    if (creditChart) {
+      creditChart.destroy();
+    }
+    
+    // Set available credit equal to the user's balance
+    const available = userBalance;
+    
     creditChart = new Chart(creditCtx, {
       type: "doughnut",
       data: {
         labels: ["Used", "Available"],
         datasets: [{
-          data: [creditData.used, creditData.available],
+          data: [creditData.used, available],
           backgroundColor: ["#e63946", "#00adb5"]
         }]
       },
@@ -227,7 +240,7 @@ async function renderCharts() {
     console.error("Error fetching dynamic credit data:", error);
   }
 
-  // Render the monthly spending bar chart as before
+  // Render the monthly spending bar chart and show insights
   try {
     const spendingResponse = await fetch(`${API_URL}/api/dashboard-data/monthly-spending`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -237,6 +250,12 @@ async function renderCharts() {
     const labels = spendingData.map(item => item.month);
     const dataValues = spendingData.map(item => item.totalSpending);
     const spendingCtx = document.getElementById("spendingChart").getContext("2d");
+    
+    // Destroy the existing spending chart instance if it exists
+    if (spendingChart) {
+      spendingChart.destroy();
+    }
+    
     spendingChart = new Chart(spendingCtx, {
       type: "bar",
       data: {
@@ -249,38 +268,67 @@ async function renderCharts() {
       },
       options: { responsive: true, scales: { y: { beginAtZero: true } } }
     });
+
+    // Calculate and display spending insights
+    renderSpendingInsights(spendingData);
   } catch (error) {
     console.error("Error fetching monthly spending data:", error);
   }
 }
 
+// Function to calculate and display spending insights
+function renderSpendingInsights(spendingData) {
+  if (!spendingData || !spendingData.length) return;
+
+  // Safely parse totalSpending for each item, defaulting to 0 if invalid
+  spendingData = spendingData.map(item => ({
+    ...item,
+    totalSpending: parseFloat(item.totalSpending) || 0
+  }));
+
+  // Calculate total, average, highest, and lowest spending
+  const totalSpending = spendingData.reduce((sum, item) => sum + item.totalSpending, 0);
+  const averageSpending = totalSpending / spendingData.length;
+  const highestMonthData = spendingData.reduce((max, item) => (item.totalSpending > max.totalSpending ? item : max), spendingData[0]);
+  const lowestMonthData = spendingData.reduce((min, item) => (item.totalSpending < min.totalSpending ? item : min), spendingData[0]);
+
+  const insightsInfo = `
+    <p><strong>Total Spending:</strong> Ksh ${totalSpending.toFixed(2)}</p>
+    <p><strong>Average Spending:</strong> Ksh ${averageSpending.toFixed(2)}</p>
+    <p><strong>Highest Spending:</strong> Ksh ${highestMonthData.totalSpending.toFixed(2)} in ${highestMonthData.month}</p>
+    <p><strong>Lowest Spending:</strong> Ksh ${lowestMonthData.totalSpending.toFixed(2)} in ${lowestMonthData.month}</p>
+  `;
+  
+  // Ensure you have an element with id="spendingInsightsInfo" in your HTML
+  const insightsContainer = document.getElementById("spendingInsightsInfo");
+  if (insightsContainer) {
+    insightsContainer.innerHTML = insightsInfo;
+  }
+}
+
+
 // Function to fetch and display notifications
 async function showNotifications() {
   try {
-    // Fetch notifications from the backend (adjust endpoint as needed)
     const response = await fetch(`${API_URL}/api/notification`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const notifications = await response.json();
     console.log("Fetched notifications:", notifications);
     
-    // Get the container element in your modal where notifications will be shown
     const notificationsBody = document.getElementById("notificationsBody");
-    notificationsBody.innerHTML = ""; // Clear previous notifications
-
+    notificationsBody.innerHTML = "";
     if (!notifications || notifications.length === 0) {
       notificationsBody.innerHTML = "<p class='text-muted'>No new notifications.</p>";
     } else {
       notifications.forEach(notification => {
         const div = document.createElement("div");
         div.className = "notification-item p-2 border-bottom";
-        // Assuming each notification has a 'message' property; adjust if needed.
         div.textContent = notification.message;
         notificationsBody.appendChild(div);
       });
     }
     
-    // Show the notifications modal using Bootstrap
     const notificationsModalEl = document.getElementById("notificationsModal");
     if (notificationsModalEl) {
       const notificationsModal = new bootstrap.Modal(notificationsModalEl);
@@ -293,7 +341,6 @@ async function showNotifications() {
     showToast("Error", "Failed to load notifications.", 3000);
   }
 }
-
 
 // Toast Notification Helper Function
 function showToast(title, message, delay = 4000) {
@@ -345,7 +392,6 @@ document.getElementById('profile-picture-form').addEventListener('submit', async
     const data = await response.json();
     if (response.ok) {
       showToast("Success", "Profile picture updated successfully!", 3000);
-      // Append a timestamp to bypass the browser cache
       document.getElementById('profile-image').src = `${API_URL}/uploads/${data.filename}?t=${new Date().getTime()}`;
     } else {
       console.warn("Profile picture upload failed:", data.message);
@@ -368,7 +414,6 @@ const loadUserProfile = async () => {
     const data = await response.json();
     console.log("User profile data:", data);
     if (response.ok) {
-      // Append a timestamp to bypass cache when loading the image
       document.getElementById('profile-image').src = `${API_URL}/uploads/${data.profile_picture || 'default-avatar.png'}?t=${new Date().getTime()}`;
     } else {
       console.warn("Failed to load profile image:", data.message);
@@ -377,7 +422,6 @@ const loadUserProfile = async () => {
     console.error('Error loading profile:', error);
   }
 };
-
 
 // Loan Application Event Listener
 document.getElementById("loanForm").addEventListener("submit", async (e) => {

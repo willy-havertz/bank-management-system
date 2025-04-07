@@ -57,6 +57,18 @@ async function initializeEmployeeDashboard() {
       networthEl.textContent = isNaN(networth) ? "Ksh 0.00" : `Ksh ${networth.toFixed(2)}`;
     }
     
+    // NEW: Display total number of customer transactions
+    const totalCustomerTransactionsEl = document.getElementById("totalCustomerTransactions");
+    if (totalCustomerTransactionsEl) {
+      totalCustomerTransactionsEl.textContent = data.totalCustomerTransactions;
+    }
+    
+    // NEW: Display total number of customer loans
+    const totalCustomerLoansEl = document.getElementById("totalCustomerLoans");
+    if (totalCustomerLoansEl) {
+      totalCustomerLoansEl.textContent = data.totalCustomerLoans;
+    }
+    
     // Load additional sections if available
     if (typeof renderCustomerAccounts === 'function') {
       console.log("Rendering customer accounts");
@@ -283,7 +295,6 @@ async function rejectLoan(loanId) {
 // Placeholder function for reloading user loans
 function loadLoans() {
   console.log("Reloading user loans...");
-  
 }
 
 async function renderEmployeeCharts() {
@@ -380,7 +391,6 @@ async function showNotifications() {
   }
 }
 
-
 // Load dashboard overview counts (pending loans, total transactions)
 async function loadDashboardOverview() {
   try {
@@ -472,7 +482,6 @@ const loadUserProfile = async () => {
     console.error('Error loading profile:', error);
   }
 };
-
 
 // Initialize additional functions on page load
 document.addEventListener("DOMContentLoaded", () => {
