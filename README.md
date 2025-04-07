@@ -73,31 +73,34 @@ The Bank Management System is built to streamline banking operations by integrat
 
 ### Customer Accounts
 ![Customer Accounts](./screenshots/Customer%20accounts.png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
-### 📊 Dashboard View
-![Dashboard](./screenshots/DASHBOARD%20PAGE%20(2).png)
+
+### Deposit-Withdraw
+![Deposit-Withdraw](./screenshots/Deposit-Withdraw.png)
+### Employeee landing page
+![Employeee landing page](./screenshots/Employee%20Landing%20Page.png)
+### Employee Login page
+![Employee Login page](./screenshots/Employee%20Login%20page.png)
+### Employee signup page
+![Employee signup page](./screenshots/Employee%20signup%20page.png)
+### Home page
+![Home page](./screenshots/HOME%20PAGE.png)
+### Loan approval
+![Loan approval](./screenshots/Loan%20Approval.png)
+### Loan management
+![Loan management](./screenshots/Loan%20Management.png)
+### Login page
+![Login page](./screenshots/LOGIN%20PAGE.png)
+### Notification
+![Notification](./screenshots/Notifications.png)
+### Our features
+![Our features](./screenshots/OUR%20FEATURES.png)
+### Profile picture
+![Profile picture](./screenshots/Profile%20Picture.png)
+### Send money
+![Send money](./screenshots/Send%20Money.png)
+### Signup page
+![Signup page](./screenshots/SIGNUP%20PAGE.png)
+### Transaction history
+![Transaction history](./screenshots/Transaction%20History.png)
+### Transactions
+![Transactions](./screenshots/Transactions.png)
