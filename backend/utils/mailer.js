@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendResetEmail(email, token) {
-  const resetLink = `http://localhost:5000/reset.html?token=${token}`;
+  const resetLink = `https://bank-management-system-0udz.onrender.com/public/reset.html?token=${token}`;
   try {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
