@@ -491,3 +491,80 @@ document.addEventListener("DOMContentLoaded", () => {
   loadDashboardOverview();
   renderLoanRequests();
 });
+
+// Sidebar toggle for mobile devices
+const sidebarOpenBtn = document.getElementById('sidebarOpen');
+const sidebarCloseBtn = document.getElementById('sidebarClose');
+const sidebar = document.getElementById('sidebar');
+
+if (sidebarOpenBtn) {
+  sidebarOpenBtn.addEventListener('click', () => {
+    sidebar.classList.add('active');
+  });
+}
+if (sidebarCloseBtn) {
+  sidebarCloseBtn.addEventListener('click', () => {
+    sidebar.classList.remove('active');
+  });
+}
+
+// Show employee section with fade animations and active link highlighting
+function showEmployeeSection(sectionId, event) {
+  const sections = ['empOverview', 'empCustomers', 'empTransactions', 'empLoans'];
+
+  // Fade out currently visible sections
+  sections.forEach(id => {
+    const section = document.getElementById(id);
+    if (section && !section.classList.contains('d-none')) {
+      section.classList.add('fade-out');
+      setTimeout(() => {
+        section.classList.add('d-none');
+        section.classList.remove('fade-out');
+      }, 300);
+    }
+  });
+
+  // After fade out, show the selected section with fade in
+  setTimeout(() => {
+    const activeSection = document.getElementById(sectionId);
+    if (activeSection) {
+      activeSection.classList.remove('d-none');
+      activeSection.classList.add('fade-in');
+      setTimeout(() => activeSection.classList.remove('fade-in'), 300);
+    }
+  }, 300);
+
+  // Update page title based on selected section
+  const titles = {
+    empOverview: 'Overview',
+    empCustomers: 'Customers',
+    empTransactions: 'Transactions',
+    empLoans: 'Loan Approvals'
+  };
+  document.getElementById('pageTitle').textContent = titles[sectionId] || 'Dashboard';
+
+  // Highlight active sidebar link
+  document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
+  if (event && event.currentTarget) {
+    const link = event.currentTarget.querySelector('.nav-link');
+    if (link) {
+      link.classList.add('active');
+    }
+  }
+
+  // On small screens, hide sidebar after selecting a section
+  if (window.innerWidth <= 768) {
+    sidebar.classList.remove('active');
+  }
+}
+
+// Example Support function
+function showSupport() {
+  alert("Support details here.");
+}
+
+// Example Notifications function
+function showNotifications() {
+  const notificationsModal = new bootstrap.Modal(document.getElementById("notificationsModal"));
+  notificationsModal.show();
+}
