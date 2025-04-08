@@ -16,8 +16,25 @@ body {
   display: flex;
   flex-direction: column;
   padding: 20px;
+  position: relative;
+  transition: transform 0.3s ease;
 }
 
+/* Hide sidebar off-canvas on small screens */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1100;
+  }
+  .sidebar.active {
+    transform: translateX(0);
+  }
+}
+
+/* Sidebar Brand */
 .sidebar .brand {
   font-size: 1.8rem;
   font-weight: bold;
@@ -26,6 +43,7 @@ body {
   letter-spacing: 1px;
 }
 
+/* Navigation links with icon spacing */
 .sidebar .nav-link {
   color: #fff;
   padding: 12px 20px;
@@ -33,9 +51,13 @@ body {
   transition: background 0.3s, transform 0.3s;
   border-radius: 4px;
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.sidebar .nav-link:hover {
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
   background-color: #00509e;
   transform: translateX(5px);
 }
@@ -45,6 +67,15 @@ main {
   flex-grow: 1;
   background-color: #fff;
   padding: 30px;
+}
+
+/* Topbar Buttons for Mobile */
+#sidebarOpen,
+#sidebarClose {
+  font-size: 1.2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 /* Profile Image */
@@ -69,12 +100,14 @@ main {
   border-radius: 10px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s;
+  margin-bottom: 20px;
 }
 
 .card-custom:hover {
   transform: translateY(-5px);
 }
 
+/* Boxes */
 .box {
   background-color: #fff;
   border-radius: 10px;
@@ -99,7 +132,7 @@ main {
   background-color: #e9ecef;
 }
 
-/* Buttons */
+/* Button Styles */
 .btn-primary {
   background-color: #007bff;
   border: none;
@@ -187,10 +220,41 @@ canvas {
   border-radius: 0 0 8px 8px;
 }
 
+/* Fade Animations */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+.fade-out {
+  animation: fadeOut 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
 /* Responsive Adjustments */
 @media (max-width: 576px) {
   .sidebar {
-    width: 80px;
+    width: 80%;
     padding: 10px;
   }
   .sidebar .brand {
