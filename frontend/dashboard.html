@@ -4,33 +4,60 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Customer Dashboard - Elite Commerce Bank</title>
+  <!-- Favicon -->
   <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/4834/4834675.png" type="image/png" />
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="./css/dashboard.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Font Awesome CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    integrity="sha512-papK3f6HsENaXX8jl1xEhkMoZ8G1P+7S1fyMspJEad+ip4pNLB8WwjMZsS7Q3uB/H7uegtlQoNAZxPK5x1bT7Q=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <style>
+    /* Paste your CSS code here if needed */
+  </style>
 </head>
-<body class="bg-light">
-  <div class="d-flex" id="dashboardContainer">
+<body>
+  <!-- Wrapper for Sidebar & Main Content -->
+  <div id="dashboardContainer" class="d-flex">
+    
     <!-- Sidebar -->
     <nav class="sidebar p-4" id="sidebar">
-      <div class="mb-4">
-        <h2 class="brand">💳 Elite Commerce Bank</h2>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="brand"><i class="fa-solid fa-credit-card"></i> Elite Commerce Bank</h2>
+        <!-- Close button for Mobile -->
+        <button class="btn btn-light d-md-none" id="closeSidebar"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <ul class="nav flex-column">
         <li class="nav-item" onclick="showSection('overviewSection')">
-          <a class="nav-link active" href="javascript:void(0)">Dashboard</a>
+          <a class="nav-link active" href="javascript:void(0)">
+            <i class="fa-solid fa-chart-line"></i> Overview
+          </a>
         </li>
         <li class="nav-item" onclick="showSection('depositSection')">
-          <a class="nav-link" href="javascript:void(0)">Deposit/Withdraw</a>
+          <a class="nav-link" href="javascript:void(0)">
+            <i class="fa-solid fa-money-check-dollar"></i> Deposit/Withdraw
+          </a>
         </li>
         <li class="nav-item" onclick="showSection('sendMoneySection')">
-          <a class="nav-link" href="javascript:void(0)">Send Money</a>
+          <a class="nav-link" href="javascript:void(0)">
+            <i class="fa-solid fa-paper-plane"></i> Send Money
+          </a>
         </li>
         <li class="nav-item" onclick="showSection('transactionsSection')">
-          <a class="nav-link" href="javascript:void(0)">Transaction History</a>
+          <a class="nav-link" href="javascript:void(0)">
+            <i class="fa-solid fa-history"></i> Transaction History
+          </a>
         </li>
         <li class="nav-item" onclick="showSection('loansSection')">
-          <a class="nav-link" href="javascript:void(0)">Loans</a>
+          <a class="nav-link" href="javascript:void(0)">
+            <i class="fa-solid fa-hand-holding-dollar"></i> Loans
+          </a>
         </li>
       </ul>
       <div class="mt-auto">
@@ -40,11 +67,20 @@
 
     <!-- Main Content -->
     <main class="p-4 w-100">
-      <header class="d-flex justify-content-between align-items-center mb-4">
-        <h1 id="pageTitle">Overview</h1>
+      <!-- Topbar for Mobile: Menu Toggle & Profile -->
+      <div class="d-flex justify-content-between align-items-center mb-4 d-md-none">
+        <button class="btn btn-light" id="openSidebar"><i class="fa-solid fa-bars"></i></button>
         <div class="profile d-flex align-items-center">
           <button id="notificationBtn" class="btn btn-light me-3" onclick="showNotifications()">🔔</button>
           <img id="profileImg" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Profile" class="profile-img" data-bs-toggle="modal" data-bs-target="#profileModal">
+        </div>
+      </div>
+      
+      <header class="d-flex justify-content-between align-items-center mb-4">
+        <h1 id="pageTitle">Overview</h1>
+        <div class="profile d-flex align-items-center">
+          <button id="notificationBtnDesktop" class="btn btn-light me-3 d-none d-md-block" onclick="showNotifications()">🔔</button>
+          <img id="profileImgDesktop" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Profile" class="profile-img" data-bs-toggle="modal" data-bs-target="#profileModal">
         </div>
       </header>
 
@@ -53,19 +89,19 @@
         <div class="row">
           <div class="col-md-4">
             <div class="card card-custom text-white mb-4">
-              <h4>💳 Elite Pay</h4>
+              <h4><i class="fa-solid fa-credit-card"></i> Elite Pay</h4>
               <p>•••• •••• •••• 5610</p>
               <p><small>VALID THRU:</small> 05/27</p>
-              <p>CARD HOLDER: <strong id="cardHolderName"></strong></p>
+              <p>CARD HOLDER: <strong id="cardHolderName">John Doe</strong></p>
             </div>
           </div>
           <div class="col-md-8">
             <div class="box p-4 mb-4">
               <h3>User Details</h3>
-              <p>Balance: <span class="text-primary" id="balance"></span></p>
-              <p>Phone: <span id="phone"></span></p>
-              <p>ID Number: <span id="idNumber"></span></p>
-              <p>Networth: <span id="networth"></span></p>
+              <p>Balance: <span class="text-primary" id="balance">Ksh 0.00</span></p>
+              <p>Phone: <span id="phone">+254700000000</span></p>
+              <p>ID Number: <span id="idNumber">12345678</span></p>
+              <p>Networth: <span id="networth">Ksh 0.00</span></p>
             </div>
           </div>
         </div>
@@ -117,7 +153,7 @@
             <input type="number" id="sendAmount" class="form-control" placeholder="Enter amount" required>
           </div>
           <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#confirmSendModal">
-            Send Money
+            <i class="fa-solid fa-paper-plane"></i> Send Money
           </button>
         </form>
       </section>
@@ -142,7 +178,9 @@
             <label for="loanPurpose" class="form-label">Purpose:</label>
             <input type="text" id="loanPurpose" class="form-control" placeholder="Enter loan purpose" required>
           </div>
-          <button type="submit" class="btn btn-warning">Apply for Loan</button>
+          <button type="submit" class="btn btn-warning">
+            <i class="fa-solid fa-hand-holding-dollar"></i> Apply for Loan
+          </button>
         </form>
         <div id="loanHistory">
           <h4>Your Loan History</h4>
@@ -178,12 +216,20 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <form id="profile-picture-form" enctype="multipart/form-data">
-          <label for="profile-pic" class="form-label">Change Profile Picture:</label>
-          <input type="file" id="profile-pic" name="profilePic" class="form-control" accept="image/*" required>
-          <button type="submit" class="btn btn-primary mt-3">Change Profile</button>
+          <div class="modal-header">
+            <h5 class="modal-title" id="profileModalLabel">Change Profile Picture</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <label for="profile-pic" class="form-label">Choose an Image:</label>
+            <input type="file" id="profile-pic" name="profilePic" class="form-control" accept="image/*" required>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Change Profile</button>
+          </div>
         </form>
-        <!-- Display Uploaded Profile Image -->
-        <img id="profile-image" src="./uploads/Screenshot (1).png" alt="Profile Picture" class="img-fluid mt-4" width="150">
+        <!-- Displayed Image -->
+        <img id="profile-image" src="./uploads/Screenshot (1).png" alt="Profile Picture" class="img-fluid mt-2 mx-auto" width="150">
       </div>
     </div>
   </div>
@@ -218,9 +264,42 @@
     </div>
   </div>
 
+  <!-- Bootstrap Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/dashboard.js"></script>
+  <!-- Your custom JS (e.g., for toggling sections, sidebar open/close, charts) -->
+  <script>
+    // Example: Sidebar toggle on mobile
+    const openSidebar = document.getElementById("openSidebar");
+    const closeSidebar = document.getElementById("closeSidebar");
+    const sidebar = document.getElementById("sidebar");
+
+    openSidebar && openSidebar.addEventListener("click", () => {
+      sidebar.classList.add("active");
+    });
+
+    closeSidebar && closeSidebar.addEventListener("click", () => {
+      sidebar.classList.remove("active");
+    });
+
+    // Dummy function to switch sections (implement actual logic as needed)
+    function showSection(sectionId) {
+      document.querySelectorAll("main > section").forEach((section) => {
+        section.classList.add("d-none");
+      });
+      document.getElementById(sectionId).classList.remove("d-none");
+      document.getElementById("pageTitle").innerText = sectionId.replace("Section", "");
+    }
+
+    function showSupport() {
+      alert("Support information goes here.");
+    }
+
+    function showNotifications() {
+      const notificationsModal = new bootstrap.Modal(document.getElementById("notificationsModal"));
+      notificationsModal.show();
+    }
+  </script>
 </body>
 </html>
