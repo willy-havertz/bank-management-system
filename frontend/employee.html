@@ -9,39 +9,43 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <!-- Font Awesome CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="css/style.css" />
-  <!-- Chart.js -->
+  <!-- Custom CSS for Employee Dashboard -->
+  <link rel="stylesheet" href="css/employee-dashboard.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-light">
+  <!-- Loading Spinner Overlay -->
+  <div id="spinnerOverlay" class="spinner-overlay">
+    <div class="spinner"></div>
+  </div>
+  
   <div class="d-flex" id="employeeContainer">
     <!-- Sidebar -->
     <nav class="sidebar p-4" id="sidebar">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="brand">💼 Elite Bank - Employee</h2>
-        <!-- Close button for mobile view -->
+        <!-- Mobile close button -->
         <button class="btn btn-light d-md-none" id="sidebarClose">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
       <ul class="nav flex-column">
-        <li class="nav-item" onclick="showEmployeeSection('empOverview', event)">
+        <li class="nav-item" onclick="showSectionWithSpinner('empOverview', event)">
           <a class="nav-link active" href="javascript:void(0)">
             <i class="fa-solid fa-chart-line"></i> Overview
           </a>
         </li>
-        <li class="nav-item" onclick="showEmployeeSection('empCustomers', event)">
+        <li class="nav-item" onclick="showSectionWithSpinner('empCustomers', event)">
           <a class="nav-link" href="javascript:void(0)">
             <i class="fa-solid fa-users"></i> Customers
           </a>
         </li>
-        <li class="nav-item" onclick="showEmployeeSection('empTransactions', event)">
+        <li class="nav-item" onclick="showSectionWithSpinner('empTransactions', event)">
           <a class="nav-link" href="javascript:void(0)">
             <i class="fa-solid fa-exchange-alt"></i> Transactions
           </a>
         </li>
-        <li class="nav-item" onclick="showEmployeeSection('empLoans', event)">
+        <li class="nav-item" onclick="showSectionWithSpinner('empLoans', event)">
           <a class="nav-link" href="javascript:void(0)">
             <i class="fa-solid fa-hand-holding-dollar"></i> Loan Approvals
           </a>
@@ -55,7 +59,7 @@
     <!-- Main Content -->
     <main class="p-4 w-100">
       <header class="d-flex justify-content-between align-items-center mb-4">
-        <!-- Open sidebar button for mobile -->
+        <!-- Mobile open button -->
         <button class="btn btn-light d-md-none" id="sidebarOpen">
           <i class="fa-solid fa-bars"></i>
         </button>
@@ -119,6 +123,7 @@
     </main>
   </div>
 
+  <!-- Modals: Profile Picture, Notifications, Toasts, etc. -->
   <!-- Profile Picture Modal -->
   <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -163,11 +168,11 @@
     </div>
   </div>
 
-  <!-- Bootstrap & Chart.js Scripts -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Custom JS -->
+  <!-- Custom JS for Employee Dashboard -->
   <script src="js/employeeDashboard.js"></script>
-  <!-- utils.js if -->
+  <!-- Optional: utils.js if needed -->
   <script src="js/utils.js"></script>
 </body>
 </html>
