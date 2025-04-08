@@ -19,8 +19,10 @@
     <nav class="sidebar p-4" id="sidebar">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="brand">💳 Elite Commerce Bank</h2>
-        <!-- Close button: visible on mobile -->
-        <button class="btn btn-light d-md-none" id="sidebarClose"><i class="fa-solid fa-xmark"></i></button>
+        <!-- Close button for mobile -->
+        <button class="btn btn-light d-md-none" id="sidebarClose">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
       <ul class="nav flex-column">
         <li class="nav-item" onclick="showSection('overviewSection')">
@@ -58,7 +60,9 @@
     <main class="p-4 w-100">
       <header class="d-flex justify-content-between align-items-center mb-4">
         <!-- Open sidebar button for mobile -->
-        <button class="btn btn-light d-md-none" id="sidebarOpen"><i class="fa-solid fa-bars"></i></button>
+        <button class="btn btn-light d-md-none" id="sidebarOpen">
+          <i class="fa-solid fa-bars"></i>
+        </button>
         <h1 id="pageTitle">Overview</h1>
         <div class="profile d-flex align-items-center">
           <button id="notificationBtn" class="btn btn-light me-3" onclick="showNotifications()">🔔</button>
@@ -241,21 +245,50 @@
   <script src="js/utils.js"></script>
   <script src="js/dashboard.js"></script>
   
-  <!-- Sidebar Toggle Script -->
+  <!-- Sidebar Toggle and Navigation JS -->
   <script>
-    const sidebarOpenBtn = document.getElementById('sidebarOpen');
-    const sidebarCloseBtn = document.getElementById('sidebarClose');
+    // Toggle Sidebar
+    const sidebarOpen = document.getElementById('sidebarOpen');
+    const sidebarClose = document.getElementById('sidebarClose');
     const sidebar = document.getElementById('sidebar');
 
-    if (sidebarOpenBtn) {
-      sidebarOpenBtn.addEventListener('click', () => {
+    if (sidebarOpen) {
+      sidebarOpen.addEventListener('click', () => {
         sidebar.classList.add('active');
       });
     }
-    if (sidebarCloseBtn) {
-      sidebarCloseBtn.addEventListener('click', () => {
+    if (sidebarClose) {
+      sidebarClose.addEventListener('click', () => {
         sidebar.classList.remove('active');
       });
+    }
+
+    // Modified showSection to hide sidebar on mobile after click
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll("main > section").forEach(section => {
+        section.classList.add("d-none");
+      });
+      // Show selected section
+      document.getElementById(sectionId).classList.remove("d-none");
+      // Update page title
+      document.getElementById("pageTitle").innerText = sectionId.replace("Section", "");
+      
+      // On small screens, hide the sidebar after a navigation click
+      if (window.innerWidth <= 768) {
+        sidebar.classList.remove('active');
+      }
+    }
+
+    // Example function for Support action
+    function showSupport() {
+      alert("Support details go here.");
+    }
+    
+    // Example function for Notifications action
+    function showNotifications() {
+      const notificationsModal = new bootstrap.Modal(document.getElementById("notificationsModal"));
+      notificationsModal.show();
     }
   </script>
 </body>
