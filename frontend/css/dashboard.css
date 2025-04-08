@@ -71,7 +71,7 @@ main {
   padding: 30px;
 }
 
-/* Topbar Buttons for Mobile (Menu Open and Sidebar Close) */
+/* Topbar Buttons for Mobile */
 #openSidebar,
 #closeSidebar {
   font-size: 1.2rem;
