@@ -55,8 +55,8 @@ main {
 }
 
 /* Topbar Buttons for Mobile */
-#openSidebar,
-#closeSidebar {
+#sidebarOpen,
+#sidebarClose {
   font-size: 1.2rem;
   background: none;
   border: none;
@@ -241,7 +241,7 @@ canvas {
 
 .spinner {
   border: 8px solid #f3f3f3;
-  border-top: 8px solid #007bff; /* Use primary color */
+  border-top: 8px solid #007bff; /* Primary color */
   border-radius: 50%;
   width: 60px;
   height: 60px;
