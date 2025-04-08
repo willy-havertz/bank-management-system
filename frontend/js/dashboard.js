@@ -558,9 +558,3 @@ function showSectionWithSpinner(sectionId, event) {
 function showSupport() {
   alert("Support details here.");
 }
-
-// Example Notifications function
-function showNotifications() {
-  const notificationsModal = new bootstrap.Modal(document.getElementById("notificationsModal"));
-  notificationsModal.show();
-}
