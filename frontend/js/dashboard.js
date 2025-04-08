@@ -470,7 +470,7 @@ document.getElementById("loanForm").addEventListener("submit", async (e) => {
 
 
 
-  // Toggle Sidebar
+ // Toggle Sidebar
     const sidebarOpen = document.getElementById('sidebarOpen');
     const sidebarClose = document.getElementById('sidebarClose');
     const sidebar = document.getElementById('sidebar');
