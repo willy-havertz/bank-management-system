@@ -1,207 +1,227 @@
 /* General Styles */
+* {
+  box-sizing: border-box;
+}
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  /* Sidebar */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background-color: #003366;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+/* Hide sidebar off-canvas on small screens */
+@media (max-width: 768px) {
   .sidebar {
-    width: 250px;
-    height: 100vh;
-    background-color: #003366;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
+    transform: translateX(-100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1100;
   }
-  
+  .sidebar.active {
+    transform: translateX(0);
+  }
+}
+
+/* Sidebar Brand */
+.sidebar .brand {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Navigation links */
+.sidebar .nav-link {
+  color: #fff;
+  padding: 12px 20px;
+  text-decoration: none;
+  transition: background 0.3s, transform 0.3s;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar .nav-link.active,
+.sidebar .nav-link:hover {
+  background-color: #00509e;
+  transform: translateX(5px);
+}
+
+/* Main Content */
+main {
+  flex-grow: 1;
+  background-color: #fff;
+  padding: 30px;
+}
+
+/* Topbar Buttons for Mobile */
+#openSidebar, #closeSidebar {
+  font-size: 1.2rem;
+  background: none;
+  border: none;
+}
+
+/* Profile Image */
+.profile-img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.profile-img:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Dashboard Cards */
+.card-custom {
+  background: linear-gradient(135deg, #ff5722, #0056b3);
+  color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s;
+}
+.card-custom:hover {
+  transform: translateY(-5px);
+}
+
+/* Boxes */
+.box {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+}
+.box:hover {
+  transform: translateY(-3px);
+}
+
+/* Transaction List */
+.list-group-item {
+  border-left: 5px solid #007bff;
+  padding: 15px;
+  transition: background 0.3s;
+}
+.list-group-item:hover {
+  background-color: #e9ecef;
+}
+
+/* Button Styles */
+.btn-primary {
+  background-color: #007bff;
+  border: none;
+  transition: background 0.3s;
+}
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+.btn-success {
+  background-color: #28a745;
+  border: none;
+  transition: background 0.3s;
+}
+.btn-success:hover {
+  background-color: #218838;
+}
+.btn-danger {
+  background-color: #dc3545;
+  border: none;
+  transition: background 0.3s;
+  color: #fff;
+}
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+/* Accordion Customization */
+.accordion-button {
+  font-weight: bold;
+  color: #003366;
+}
+.accordion-button:not(.collapsed) {
+  background-color: #e9ecef;
+}
+.accordion-body {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+/* Modal */
+.modal-content {
+  border-radius: 10px;
+}
+
+/* Chart Canvas */
+canvas {
+  max-width: 100%;
+}
+
+/* Toast Container */
+#liveToast {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Toast Header */
+#liveToast .toast-header {
+  background-color: #00796B;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: bold;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.75rem 1rem;
+}
+
+/* Toast Body */
+#liveToast .toast-body {
+  font-size: 1rem;
+  color: #b30000;
+  text-align: center;
+  padding: 1rem;
+  background-color: #e0f2f1;
+  border-top: 1px solid #b2dfdb;
+  border-radius: 0 0 8px 8px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+  .sidebar {
+    width: 80%;
+    padding: 10px;
+  }
   .sidebar .brand {
-    font-size: 1.8rem;
-    font-weight: bold;
-    margin-bottom: 30px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    font-size: 1.2rem;
   }
-  
-  .sidebar .nav-link {
-    color: #fff;
-    padding: 12px 20px;
-    text-decoration: none;
-    transition: background 0.3s, transform 0.3s;
-    border-radius: 4px;
-    margin-bottom: 8px;
+  .nav-link {
+    padding: 8px;
+    font-size: 0.9rem;
   }
-  
-  .sidebar .nav-link:hover {
-    background-color: #00509e;
-    transform: translateX(5px);
-  }
-  
-  /* Main Content */
   main {
-    flex-grow: 1;
-    background-color: #fff;
-    padding: 30px;
-  }
-  
-  /* Profile Image */
-  .profile-img {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: transform 0.3s, box-shadow 0.3s;
-  }
-  
-  .profile-img:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
-  }
-  
-  /* Dashboard Cards */
-  .card-custom {
-    background: linear-gradient(135deg, #ff5722, #0056b3);
-    color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s;
-  }
-  
-  .card-custom:hover {
-    transform: translateY(-5px);
-  }
-  
-  .box {
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s;
-  }
-  
-  .box:hover {
-    transform: translateY(-3px);
-  }
-  
-  /* Transaction List */
-  .list-group-item {
-    border-left: 5px solid #007bff;
     padding: 15px;
-    transition: background 0.3s;
   }
-  
-  .list-group-item:hover {
-    background-color: #e9ecef;
-  }
-  
-  /* Buttons */
-  .btn-primary {
-    background-color: #007bff;
-    border: none;
-    transition: background 0.3s;
-  }
-  
-  .btn-primary:hover {
-    background-color: #0056b3;
-  }
-  
-  .btn-success {
-    background-color: #28a745;
-    border: none;
-    transition: background 0.3s;
-  }
-  
-  .btn-success:hover {
-    background-color: #218838;
-  }
-  
-  .btn-danger {
-    background-color: #dc3545;
-    border: none;
-    transition: background 0.3s;
-    color: #fff;
-  }
-  
-  .btn-danger:hover {
-    background-color: #c82333;
-  }
-  
-  /* Accordion Customization */
-  .accordion-button {
-    font-weight: bold;
-    color: #003366;
-  }
-  
-  .accordion-button:not(.collapsed) {
-    background-color: #e9ecef;
-  }
-  
-  .accordion-body {
-    font-size: 0.95rem;
-    color: #333;
-  }
-  
-  /* Modal */
-  .modal-content {
-    border-radius: 10px;
-  }
-  
-  /* Chart Canvas */
-  canvas {
-    max-width: 100%;
-  }
-  
-  /* Toast Container */
-  #liveToast {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #ffffff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    transition: opacity 0.3s ease-in-out;
-  }
-  
-  /* Toast Header */
-  #liveToast .toast-header {
-    background-color: #00796B;
-    color: #fff;
-    font-size: 1rem;
-    font-weight: bold;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 0.75rem 1rem;
-  }
-  
-  /* Toast Body */
-  #liveToast .toast-body {
-    font-size: 1rem;
-    color: #b30000;
-    text-align: center;
-    padding: 1rem;
-    background-color: #e0f2f1;
-    border-top: 1px solid #b2dfdb;
-    border-radius: 0 0 8px 8px;
-  }
-  
-  /* Responsive Adjustments */
-  @media (max-width: 576px) {
-    .sidebar {
-      width: 80px;
-      padding: 10px;
-    }
-    .sidebar .brand {
-      font-size: 1.2rem;
-    }
-    .nav-link {
-      padding: 8px;
-      font-size: 0.9rem;
-    }
-    main {
-      padding: 15px;
-    }
-  }
-  
+}
