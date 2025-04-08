@@ -562,3 +562,5 @@ function showEmployeeSection(sectionId, event) {
 function showSupport() {
   alert("Support details here.");
 }
+
+
