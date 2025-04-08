@@ -28,3 +28,36 @@ function showToast(title, message, delay = 4000) {
 function log(message) {
   console.log(`[${new Date().toISOString()}] ${message}`);
 }
+
+// Function to show the loading spinner
+function showSpinner() {
+  // Create or select an existing spinner overlay element
+  let spinner = document.getElementById('spinnerOverlay');
+  if (!spinner) {
+    spinner = document.createElement('div');
+    spinner.id = 'spinnerOverlay';
+    spinner.className = 'spinner-overlay';
+    spinner.innerHTML = '<div class="spinner"></div>';
+    document.body.appendChild(spinner);
+  }
+  spinner.style.display = 'flex';
+}
+
+// Function to hide the loading spinner
+function hideSpinner() {
+  const spinner = document.getElementById('spinnerOverlay');
+  if (spinner) {
+    spinner.style.display = 'none';
+  }
+}
+
+// Example usage during section transition
+function showSectionWithSpinner(sectionId, event) {
+  showSpinner();
+  // Simulate loading delay (remove this delay in production)
+  setTimeout(() => {
+    // Call your existing section transition logic (slide animations)
+    showEmployeeSection(sectionId, event);  // or showCustomerSection, depending on dashboard
+    hideSpinner();
+  }, 500);
+}
