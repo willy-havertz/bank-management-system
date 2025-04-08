@@ -1,12 +1,10 @@
 /* General Styles */
-* {
-  box-sizing: border-box;
-}
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f8f9fa;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 /* Sidebar */
@@ -22,21 +20,6 @@ body {
   transition: transform 0.3s ease;
 }
 
-/* Hide sidebar off-canvas on small screens */
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1100;
-  }
-  .sidebar.active {
-    transform: translateX(0);
-  }
-}
-
-/* Sidebar Brand */
 .sidebar .brand {
   font-size: 1.8rem;
   font-weight: bold;
@@ -58,8 +41,8 @@ body {
   gap: 10px;
 }
 
-.sidebar .nav-link.active,
-.sidebar .nav-link:hover {
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
   background-color: #00509e;
   transform: translateX(5px);
 }
@@ -88,6 +71,7 @@ main {
   cursor: pointer;
   transition: transform 0.3s, box-shadow 0.3s;
 }
+
 .profile-img:hover {
   transform: scale(1.1);
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
@@ -101,7 +85,9 @@ main {
   border-radius: 10px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s;
+  margin-bottom: 20px;
 }
+
 .card-custom:hover {
   transform: translateY(-5px);
 }
@@ -115,6 +101,7 @@ main {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s;
 }
+
 .box:hover {
   transform: translateY(-3px);
 }
@@ -125,6 +112,7 @@ main {
   padding: 15px;
   transition: background 0.3s;
 }
+
 .list-group-item:hover {
   background-color: #e9ecef;
 }
@@ -135,23 +123,28 @@ main {
   border: none;
   transition: background 0.3s;
 }
+
 .btn-primary:hover {
   background-color: #0056b3;
 }
+
 .btn-success {
   background-color: #28a745;
   border: none;
   transition: background 0.3s;
 }
+
 .btn-success:hover {
   background-color: #218838;
 }
+
 .btn-danger {
   background-color: #dc3545;
   border: none;
   transition: background 0.3s;
   color: #fff;
 }
+
 .btn-danger:hover {
   background-color: #c82333;
 }
@@ -161,9 +154,11 @@ main {
   font-weight: bold;
   color: #003366;
 }
+
 .accordion-button:not(.collapsed) {
   background-color: #e9ecef;
 }
+
 .accordion-body {
   font-size: 0.95rem;
   color: #333;
@@ -208,6 +203,54 @@ canvas {
   background-color: #e0f2f1;
   border-top: 1px solid #b2dfdb;
   border-radius: 0 0 8px 8px;
+}
+
+/* Slide Animations */
+.slide-in {
+  animation: slideIn 0.5s ease-in-out forwards;
+}
+
+.slide-out {
+  animation: slideOut 0.5s ease-in-out forwards;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-100%); opacity: 0; }
+}
+
+/* Loading Spinner Overlay */
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  display: none; /* Hidden by default */
+}
+
+.spinner {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #007bff; /* Use primary color */
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Responsive Adjustments */
