@@ -67,7 +67,7 @@ document.getElementById("reset-form").addEventListener("submit", async (e) => {
     const data = await response.json();
     if (response.ok) {
       showToast("Success", "Password reset successful! Redirecting to login...", 4000);
-      setTimeout(() => window.location.href = '/auth.html', 4000);
+      setTimeout(() => window.location.href = '../auth.html', 4000);
     } else {
       showToast("Error", data.message || "Failed to reset password.", 4000);
     }
