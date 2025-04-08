@@ -5,29 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Employee Dashboard - Elite Commerce Bank</title>
   <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/4834/4834675.png" type="image/png" />
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Font Awesome CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="css/style.css" />
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-light">
   <div class="d-flex" id="employeeContainer">
     <!-- Sidebar -->
     <nav class="sidebar p-4" id="sidebar">
-      <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="brand">💼 Elite Bank - Employee</h2>
+        <!-- Close button for mobile view -->
+        <button class="btn btn-light d-md-none" id="sidebarClose">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
       <ul class="nav flex-column">
-        <li class="nav-item" onclick="showEmployeeSection('empOverview')">
-          <a class="nav-link active" href="javascript:void(0)">Overview</a>
+        <li class="nav-item" onclick="showEmployeeSection('empOverview', event)">
+          <a class="nav-link active" href="javascript:void(0)">
+            <i class="fa-solid fa-chart-line"></i> Overview
+          </a>
         </li>
-        <li class="nav-item" onclick="showEmployeeSection('empCustomers')">
-          <a class="nav-link" href="javascript:void(0)">Customers</a>
+        <li class="nav-item" onclick="showEmployeeSection('empCustomers', event)">
+          <a class="nav-link" href="javascript:void(0)">
+            <i class="fa-solid fa-users"></i> Customers
+          </a>
         </li>
-        <li class="nav-item" onclick="showEmployeeSection('empTransactions')">
-          <a class="nav-link" href="javascript:void(0)">Transactions</a>
+        <li class="nav-item" onclick="showEmployeeSection('empTransactions', event)">
+          <a class="nav-link" href="javascript:void(0)">
+            <i class="fa-solid fa-exchange-alt"></i> Transactions
+          </a>
         </li>
-        <li class="nav-item" onclick="showEmployeeSection('empLoans')">
-          <a class="nav-link" href="javascript:void(0)">Loan Approvals</a>
+        <li class="nav-item" onclick="showEmployeeSection('empLoans', event)">
+          <a class="nav-link" href="javascript:void(0)">
+            <i class="fa-solid fa-hand-holding-dollar"></i> Loan Approvals
+          </a>
         </li>
       </ul>
       <div class="mt-auto">
@@ -38,10 +55,13 @@
     <!-- Main Content -->
     <main class="p-4 w-100">
       <header class="d-flex justify-content-between align-items-center mb-4">
+        <!-- Open sidebar button for mobile -->
+        <button class="btn btn-light d-md-none" id="sidebarOpen">
+          <i class="fa-solid fa-bars"></i>
+        </button>
         <h1 id="pageTitle">Overview</h1>
         <div class="profile d-flex align-items-center">
           <button id="notificationBtn" class="btn btn-light me-3" onclick="showNotifications()">🔔</button>
-          <!-- Profile image loaded dynamically -->
           <img id="profileImg" src="https://randomuser.me/api/portraits/men/46.jpg" alt="Profile" class="profile-img" data-bs-toggle="modal" data-bs-target="#profileModal">
         </div>
       </header>
@@ -90,11 +110,10 @@
         </ul>
       </section>
 
-      <!-- Loan Approvals Section -->
       <section id="empLoans" class="d-none">
         <h3>Loan Approvals</h3>
         <div id="loanAccordion" class="accordion">
-          <!-- Loan items will be rendered dynamically via JS -->
+          <p class="text-muted text-center mt-3">No loan approvals pending.</p>
         </div>
       </section>
     </main>
@@ -109,7 +128,6 @@
           <input type="file" id="profile-pic" name="profilePic" class="form-control" accept="image/*" required>
           <button type="submit" class="btn btn-primary mt-3">Upload Image</button>
         </form>
-        <!-- Display Uploaded Profile Image -->
         <img id="profile-image" src="uploads/Screenshot (1).png" alt="Profile Picture" class="img-fluid mt-4" width="150">
       </div>
     </div>
@@ -147,8 +165,9 @@
 
   <!-- Bootstrap & Chart.js Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Custom JS Files -->
-  <script src="js/utils.js"></script>
+  <!-- Custom JS -->
   <script src="js/employeeDashboard.js"></script>
+  <!-- utils.js if -->
+  <script src="js/utils.js"></script>
 </body>
 </html>
