@@ -469,3 +469,42 @@ document.getElementById("loanForm").addEventListener("submit", async (e) => {
 });
 
 
+
+  // Toggle Sidebar
+    const sidebarOpen = document.getElementById('sidebarOpen');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const sidebar = document.getElementById('sidebar');
+
+    if (sidebarOpen) {
+      sidebarOpen.addEventListener('click', () => {
+        sidebar.classList.add('active');
+      });
+    }
+    if (sidebarClose) {
+      sidebarClose.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+      });
+    }
+
+    // Modified showSection to hide sidebar on mobile after click
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll("main > section").forEach(section => {
+        section.classList.add("d-none");
+      });
+      // Show selected section
+      document.getElementById(sectionId).classList.remove("d-none");
+      // Update page title
+      document.getElementById("pageTitle").innerText = sectionId.replace("Section", "");
+      
+      // On small screens, hide the sidebar after a navigation click
+      if (window.innerWidth <= 768) {
+        sidebar.classList.remove('active');
+      }
+    }
+
+    // Example function for Support action
+    function showSupport() {
+      alert("Support details go here.");
+    }
+
