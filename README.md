@@ -14,7 +14,7 @@ The Bank Management System is a full-stack application designed to manage bankin
 6. [Running the Application](#running-the-application)
 7. [Database Configuration (Supabase)](#database-configuration-supabase)
 8. [Screenshots](#screenshots)
-9. [Usage](#usage)
+9. [User Manual ](#usage)
 
 ---
 
