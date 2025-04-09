@@ -13,12 +13,9 @@ The Bank Management System is a full-stack application designed to manage bankin
 5. [Environment Setup](#environment-setup)
 6. [Running the Application](#running-the-application)
 7. [Database Configuration (Supabase)](#database-configuration-supabase)
-8. [Project Structure](#project-structure)
-9. [ER Diagrams](#er-diagrams)
-10. [Screenshots](#screenshots)
-11. [Usage](#usage)
-12. [License](#license)
-13. [Contact](#contact)
+8. [ER Diagrams](#er-diagrams)
+9. [Screenshots](#screenshots)
+10. [Usage](#usage)
 
 ---
 
@@ -41,7 +38,7 @@ The Bank Management System is built to streamline banking operations by integrat
 
 ## Technologies Used
 
-- **Frontend:** HTML, CSS, JavaScript (or your preferred framework/library)
+- **Frontend:** HTML, CSS, JavaScript
 - **Backend:** Node.js, Express.js
 - **Database:** Supabase (PostgreSQL)
 - **Email Service:** Nodemailer
@@ -53,14 +50,96 @@ The Bank Management System is built to streamline banking operations by integrat
 
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/yourusername/bank-management-system.git
+   git clone https://github.com/willy-havertz/bank-management-system.git
    cd bank-management-system
 
+2. **Install dependencies for the backend**
+   ```bash
+   cd backend
+   npm install
 
-## Screenshots
+## Environment setup
+
+- create .env file in the backend directory
+
+# Server Configuration
+- PORT=5000
+
+# Supabase Database
+- DATABASE_URL=your_supabase_database_url
+- SUPABASE_KEY=your_supabase_key
+
+# Nodemailer Email Configuration
+- EMAIL_HOST=smtp.example.com
+- EMAIL_PORT=587
+- EMAIL_USER=your_email@example.com
+- EMAIL_PASS=your_email_password
+
+## 🏃 Running the Application
+  1. **Start the Backend Server**
+  ```bash
+  cd backend
+  npm run dev
+
+ 2. **Access the application
+ - Open you browser and navigate to
+   [Elite commerce bank](https://bank-management-system-0udz.onrender.com)
+
+## Database Configaration (Supabase)
+The project uses Supabase for database management. Follow these steps to set up your database:
+
+1. **Create a Supabase Account:**
+ - Visit Supabase and sign up for an account
+ - Create a new project to obtain your
+ - DATABASE_URL and SUPABASE_KEY.
+
+2. **Database Schema & Migrations:**
+ - Use the SQL scripts provided in the /database/migrations folder to create tables and define the schema.
+ - Optionally, seed initial data using the script in /database/seed.sql.
+
+3. **Connect the Application:**
+ - Ensure the DATABASE_URL and SUPABASE_KEY in your .env file are correctly set.
+
+## Er Diagrams
+
+## Usage
+You can access the deployed app here:
+
+👉 [Bank Management System](https://bank-management-system-0udz.onrender.com)
+
+---
+
+## 🧑‍💼 How to Use the Application
+
+1. **Sign Up**
+   - Visit the [Live Site](https://bank-management-system-0udz.onrender.com)
+   - Fill in your details: Name, Email, Password, ID Number, and Phone Number
+
+2. **Login**
+   - Enter your email and password
+   - Upon login, you’ll be redirected to your dashboard
+
+3. **Dashboard Features**
+   - 💳 View your account balance
+   - 📤 Send Money to other users
+   - 📥 Receive Money (get notified)
+   - 💰 Deposit or Withdraw cash
+   - 🏦 Apply for Loans
+   - ✅ Approve/Reject Loans (if you’re an employee)
+
+4. **Profile**
+   - View and manage notifications
+
+5. **Transaction Logs**
+   - Monitor your deposits, withdrawals, and transfer history
+
+---
+
+> Powered by **Nodemailer** and integrated via Supabase backend triggers.
+
 
 ### Login Page
-![Login Page](./screenshots/LOGIN%20PAGE.pngscreenshots/login.png)
+![Login Page](./screenshots/LOGIN%20PAGE.png)
 
 ### About us
 ![About Us](./screenshots/ABOUT%20US.png)
