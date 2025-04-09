@@ -1,177 +1,111 @@
-/* General Styles */
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f8f9fa;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* Sidebar */
-.sidebar {
-  width: 250px;
-  height: 100vh;
-  background-color: #003366;
+/* Employee Auth / Dashboard Global Styles */
+.auth-body {
+  background: linear-gradient(135deg, #0a0a0a, #1f1f1f);
   color: #fff;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  position: relative;
-  transition: transform 0.3s ease;
-}
-
-.sidebar .brand {
-  font-size: 1.8rem;
-  font-weight: bold;
-  margin-bottom: 30px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* Navigation links with icon spacing */
-.sidebar .nav-link {
-  color: #fff;
-  padding: 12px 20px;
-  text-decoration: none;
-  transition: background 0.3s, transform 0.3s;
-  border-radius: 4px;
-  margin-bottom: 8px;
+  min-height: 100vh;
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.sidebar .nav-link:hover,
-.sidebar .nav-link.active {
-  background-color: #00509e;
-  transform: translateX(5px);
-}
-
-/* Main Content */
-main {
-  flex-grow: 1;
-  background-color: #fff;
-  padding: 30px;
-}
-
-/* Topbar Buttons for Mobile */
-#sidebarOpen,
-#sidebarClose {
-  font-size: 1.2rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-/* Profile Image */
-.profile-img {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.profile-img:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
-}
-
-/* Dashboard Cards */
-.card-custom {
-  background: linear-gradient(135deg, #ff5722, #0056b3);
-  color: #fff;
+  justify-content: center;
   padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s;
-  margin-bottom: 20px;
 }
 
-.card-custom:hover {
+/* Auth Card for Employee Login/Signup */
+.auth-card {
+  width: 100%;
+  max-width: 500px;
+  border: none;
+  border-radius: 15px;
+  background: #212529;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auth-card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9);
 }
 
-/* Boxes */
-.box {
-  background-color: #fff;
+/* Bank Name Header Styling */
+.bank-name {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: #00adb5;
+  margin-bottom: 10px;
+}
+
+.bank-name span {
+  color: #ff5722;
+}
+
+/* Navigation Tabs Styling */
+.nav-tabs .nav-link {
+  color: #aaa;
+  transition: color 0.3s ease, border-bottom 0.3s ease;
+}
+
+.nav-tabs .nav-link.active {
+  color: #00adb5;
+  border-bottom: 2px solid #00adb5;
+}
+
+/* Form Labels and Controls */
+.form-label {
+  color: #fff;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.form-control {
+  background: #343a40;
+  color: #fff;
+  border: 1px solid #495057;
   border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s;
+  padding: 10px 15px;
+  transition: border-color 0.3s ease;
 }
 
-.box:hover {
-  transform: translateY(-3px);
+.form-control:focus {
+  border-color: #00adb5;
+  box-shadow: 0 0 5px rgba(0, 173, 181, 0.5);
 }
 
-/* Transaction List */
-.list-group-item {
-  border-left: 5px solid #007bff;
-  padding: 15px;
-  transition: background 0.3s;
-}
-
-.list-group-item:hover {
-  background-color: #e9ecef;
-}
-
-/* Button Styles */
+/* Buttons */
 .btn-primary {
-  background-color: #007bff;
+  background: #00adb5;
   border: none;
-  transition: background 0.3s;
+  border-radius: 10px;
+  padding: 12px;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .btn-primary:hover {
-  background-color: #0056b3;
+  background: #007f89;
+  transform: scale(1.02);
 }
 
 .btn-success {
-  background-color: #28a745;
+  background: #28a745;
   border: none;
-  transition: background 0.3s;
+  border-radius: 10px;
+  padding: 12px;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .btn-success:hover {
-  background-color: #218838;
+  background: #218838;
+  transform: scale(1.02);
 }
 
-.btn-danger {
-  background-color: #dc3545;
-  border: none;
-  transition: background 0.3s;
-  color: #fff;
+/* Home Link */
+.home-link {
+  color: #00adb5;
+  text-decoration: none;
+  transition: color 0.3s ease;
 }
 
-.btn-danger:hover {
-  background-color: #c82333;
-}
-
-/* Accordion Customization */
-.accordion-button {
-  font-weight: bold;
-  color: #003366;
-}
-
-.accordion-button:not(.collapsed) {
-  background-color: #e9ecef;
-}
-
-.accordion-body {
-  font-size: 0.95rem;
-  color: #333;
-}
-
-/* Modal */
-.modal-content {
-  border-radius: 10px;
-}
-
-/* Chart Canvas */
-canvas {
-  max-width: 100%;
+.home-link:hover {
+  color: #ff5722;
 }
 
 /* Toast Container */
@@ -186,7 +120,7 @@ canvas {
 
 /* Toast Header */
 #liveToast .toast-header {
-  background-color: #00796B;
+  background-color: #00796B; /* Teal background */
   color: #fff;
   font-size: 1rem;
   font-weight: bold;
@@ -205,68 +139,19 @@ canvas {
   border-radius: 0 0 8px 8px;
 }
 
-/* Slide Animations */
-.slide-in {
-  animation: slideIn 0.5s ease-in-out forwards;
-}
-
-.slide-out {
-  animation: slideOut 0.5s ease-in-out forwards;
-}
-
-@keyframes slideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slideOut {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(-100%); opacity: 0; }
-}
-
-/* Loading Spinner Overlay */
-.spinner-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255,255,255,0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3000;
-  display: none; /* Hidden by default */
-}
-
-.spinner {
-  border: 8px solid #f3f3f3;
-  border-top: 8px solid #007bff;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
 
 /* Responsive Adjustments */
 @media (max-width: 576px) {
-  .sidebar {
-    width: 80%;
+  .auth-card {
+    max-width: 90%;
+  }
+  .bank-name {
+    font-size: 1.8rem;
+  }
+  .form-control {
+    padding: 8px 12px;
+  }
+  .btn-primary, .btn-success {
     padding: 10px;
-  }
-  .sidebar .brand {
-    font-size: 1.2rem;
-  }
-  .nav-link {
-    padding: 8px;
-    font-size: 0.9rem;
-  }
-  main {
-    padding: 15px;
   }
 }

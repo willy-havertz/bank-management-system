@@ -153,7 +153,6 @@ async function renderCustomerAccounts() {
 async function renderEmployeeTransactions() {
   console.log("Loading employee transactions...");
   try {
-    // Using /api/transaction/all endpoint to get all transactions
     const response = await fetch(`${API_URL}/api/transaction/all`, {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -205,7 +204,7 @@ async function renderLoanRequests() {
 function renderLoanHistory(loans) {
   console.log("Rendering loan history with", loans.length, "loans.");
   const loanAccordion = document.getElementById("loanAccordion");
-  loanAccordion.innerHTML = ""; // Clear previous items
+  loanAccordion.innerHTML = "";
   loans.forEach((loan, index) => {
     const amount = parseFloat(loan.amount);
     const formattedAmount = isNaN(amount) ? "0.00" : amount.toFixed(2);
@@ -238,7 +237,7 @@ function loadPendingLoans() {
   renderLoanRequests();
 }
 
-// Loan approval function
+// Loan approval function (now refreshes the dashboard overview after success)
 async function approveLoan(loanId) {
   try {
     const response = await fetch(`${API_URL}/api/loan/approve`, {
@@ -255,7 +254,9 @@ async function approveLoan(loanId) {
     if (response.ok) {
       showToast("Success", data.message || "Loan approved!", 3000);
       loadPendingLoans(); // Reload pending loans
-      loadLoans(); // Placeholder if user loans need reloading
+      loadLoans();        // Reload any loan lists if applicable
+      // Refresh the dashboard overview to display updated balance
+      initializeEmployeeDashboard();
     } else {
       showToast("Error", data.message || "Approval failed.", 3000);
     }
@@ -282,7 +283,7 @@ async function rejectLoan(loanId) {
     if (response.ok) {
       showToast("Success", data.message || "Loan rejected!", 3000);
       loadPendingLoans(); // Reload pending loans
-      loadLoans(); // Placeholder if user loans need reloading
+      loadLoans();        // Reload user loans if necessary
     } else {
       showToast("Error", data.message || "Rejection failed.", 3000);
     }
@@ -292,13 +293,13 @@ async function rejectLoan(loanId) {
   }
 }
 
-// Placeholder function for reloading user loans
+// Placeholder function for reloading user loans (adjust as needed)
 function loadLoans() {
   console.log("Reloading user loans...");
 }
 
+// Render employee charts
 async function renderEmployeeCharts() {
-  // Fetch aggregated credit data for employees
   try {
     const creditResponse = await fetch(`${API_URL}/api/dashboard-data/employee-credit-data`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -306,10 +307,7 @@ async function renderEmployeeCharts() {
     const creditData = await creditResponse.json();
     console.log("Employee Aggregated Credit Data:", creditData);
     
-    // Now creditData contains: { totalAvailable: <sum of customer balances>, totalCreditUsage: <sum of withdrawals and sends> }
     const creditCtx = document.getElementById("creditChart").getContext("2d");
-    
-    // Create a new Chart.js doughnut chart with the aggregated data
     creditChart = new Chart(creditCtx, {
       type: "doughnut",
       data: {
@@ -325,7 +323,6 @@ async function renderEmployeeCharts() {
     console.error("Error fetching employee credit data:", error);
   }
   
-  // Render the monthly spending bar chart (if applicable)
   try {
     const spendingResponse = await fetch(`${API_URL}/api/dashboard-data/monthly-spending`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -359,7 +356,6 @@ async function showNotifications() {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await response.json();
-    // If the response is an object with a 'notifications' property, extract it.
     const notifications = Array.isArray(data) ? data : (data.notifications || []);
     console.log("Employee Notifications:", notifications);
     
@@ -473,7 +469,6 @@ const loadUserProfile = async () => {
     const data = await response.json();
     console.log("User profile data:", data);
     if (response.ok) {
-      // Append a timestamp to bypass cache when loading the image
       document.getElementById('profile-image').src = `${API_URL}/uploads/${data.profile_picture || 'default-avatar.png'}?t=${new Date().getTime()}`;
     } else {
       console.warn("Failed to load profile image:", data.message);
@@ -562,5 +557,3 @@ function showEmployeeSection(sectionId, event) {
 function showSupport() {
   alert("Support details here.");
 }
-
-

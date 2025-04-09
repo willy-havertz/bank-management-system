@@ -60,10 +60,9 @@ class UserPrototype {
     };
   }
 
+  // Updated addToBalance method using 'increment_balance'
   static async addToBalance(userId, amount) {
-    const { error } = await pool
-      .rpc('add_to_balance', { p_user_id: userId, p_amount: amount });
-
+    const { error } = await pool.rpc('increment_balance', { p_user_id: userId, p_amount: amount });
     if (error) {
       console.error('Error adding to balance:', error.message);
     }
