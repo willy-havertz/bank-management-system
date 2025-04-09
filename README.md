@@ -11,11 +11,10 @@ The Bank Management System is a full-stack application designed to manage bankin
 3. [Technologies Used](#technologies-used)
 4. [Installation](#installation)
 5. [Environment Setup](#environment-setup)
-6. [🏃 Running the Application](#running-the-application)
+6. [Running the Application](#running-the-application)
 7. [Database Configuration (Supabase)](#database-configuration-supabase)
-8. [ER Diagrams](#er-diagrams)
-9. [Screenshots](#screenshots)
-10. [Usage](#usage)
+8. [Screenshots](#screenshots)
+9. [Usage](#usage)
 
 ---
 
@@ -75,7 +74,7 @@ The Bank Management System is built to streamline banking operations by integrat
 - EMAIL_USER=your_email@example.com
 - EMAIL_PASS=your_email_password
 
-## 🏃 Running the Application
+## Running the Application
 1. **Start the Backend Server**
 - cd backend
 - npm run dev
@@ -132,7 +131,7 @@ You can access the deployed app here:
 
 > Powered by **Nodemailer** and integrated via Supabase backend triggers.
 
-## Screenshot
+## Screenshots
 
 ### Login Page
 ![Login Page](./screenshots/LOGIN%20PAGE.png)
