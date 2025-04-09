@@ -11,7 +11,7 @@ The Bank Management System is a full-stack application designed to manage bankin
 3. [Technologies Used](#technologies-used)
 4. [Installation](#installation)
 5. [Environment Setup](#environment-setup)
-6. [Running the Application](#running-the-application)
+6. [🏃 Running the Application](#running-the-application)
 7. [Database Configuration (Supabase)](#database-configuration-supabase)
 8. [ER Diagrams](#er-diagrams)
 9. [Screenshots](#screenshots)
@@ -82,7 +82,7 @@ The Bank Management System is built to streamline banking operations by integrat
 2. **Access the application**
 - Open you browser and navigate to [Elite commerce bank](https://bank-management-system-0udz.onrender.com)
 
-## Database Configaration (Supabase)
+## Database Configuration (Supabase)
 The project uses Supabase for database management. Follow these steps to set up your database:
 
 1. **Create a Supabase Account:**
@@ -96,8 +96,6 @@ The project uses Supabase for database management. Follow these steps to set up 
 
 3. **Connect the Application:**
 - Ensure the DATABASE_URL and SUPABASE_KEY in your .env file are correctly set.
-
-## Er Diagrams
 
 ## Usage
 You can access the deployed app here:
@@ -134,6 +132,7 @@ You can access the deployed app here:
 
 > Powered by **Nodemailer** and integrated via Supabase backend triggers.
 
+## Screenshot
 
 ### Login Page
 ![Login Page](./screenshots/LOGIN%20PAGE.png)
