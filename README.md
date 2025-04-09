@@ -62,43 +62,40 @@ The Bank Management System is built to streamline banking operations by integrat
 
 - create .env file in the backend directory
 
-# Server Configuration
+### Server Configuration
 - PORT=5000
 
-# Supabase Database
+### Supabase Database
 - DATABASE_URL=your_supabase_database_url
 - SUPABASE_KEY=your_supabase_key
 
-# Nodemailer Email Configuration
+## Nodemailer Email Configuration
 - EMAIL_HOST=smtp.example.com
 - EMAIL_PORT=587
 - EMAIL_USER=your_email@example.com
 - EMAIL_PASS=your_email_password
 
 ## 🏃 Running the Application
-  1. **Start the Backend Server**
-  ```bash
-  cd backend
-  npm run dev
-
- 2. **Access the application
- - Open you browser and navigate to
-   [Elite commerce bank](https://bank-management-system-0udz.onrender.com)
+1. **Start the Backend Server**
+- cd backend
+- npm run dev
+2. **Access the application**
+- Open you browser and navigate to [Elite commerce bank](https://bank-management-system-0udz.onrender.com)
 
 ## Database Configaration (Supabase)
 The project uses Supabase for database management. Follow these steps to set up your database:
 
 1. **Create a Supabase Account:**
- - Visit Supabase and sign up for an account
- - Create a new project to obtain your
- - DATABASE_URL and SUPABASE_KEY.
+- Visit Supabase and sign up for an account
+- Create a new project to obtain your
+- DATABASE_URL and SUPABASE_KEY.
 
 2. **Database Schema & Migrations:**
- - Use the SQL scripts provided in the /database/migrations folder to create tables and define the schema.
- - Optionally, seed initial data using the script in /database/seed.sql.
+- Use the SQL scripts provided in the /database/migrations folder to create tables and define the schema.
+- Optionally, seed initial data using the script in /database/seed.sql.
 
 3. **Connect the Application:**
- - Ensure the DATABASE_URL and SUPABASE_KEY in your .env file are correctly set.
+- Ensure the DATABASE_URL and SUPABASE_KEY in your .env file are correctly set.
 
 ## Er Diagrams
 
@@ -112,26 +109,26 @@ You can access the deployed app here:
 ## 🧑‍💼 How to Use the Application
 
 1. **Sign Up**
-   - Visit the [Live Site](https://bank-management-system-0udz.onrender.com)
-   - Fill in your details: Name, Email, Password, ID Number, and Phone Number
+- Visit the [Live Site](https://bank-management-system-0udz.onrender.com)
+- Fill in your details: Name, Email, Password, ID Number, and Phone Number
 
 2. **Login**
-   - Enter your email and password
-   - Upon login, you’ll be redirected to your dashboard
+- Enter your email and password
+- Upon login, you’ll be redirected to your dashboard
 
 3. **Dashboard Features**
-   - 💳 View your account balance
-   - 📤 Send Money to other users
-   - 📥 Receive Money (get notified)
-   - 💰 Deposit or Withdraw cash
-   - 🏦 Apply for Loans
-   - ✅ Approve/Reject Loans (if you’re an employee)
+- 💳 View your account balance
+- 📤 Send Money to other users
+- 📥 Receive Money (get notified)
+- 💰 Deposit or Withdraw cash
+- 🏦 Apply for Loans
+- ✅ Approve/Reject Loans (if you’re an employee)
 
 4. **Profile**
-   - View and manage notifications
+- View and manage notifications
 
 5. **Transaction Logs**
-   - Monitor your deposits, withdrawals, and transfer history
+- Monitor your deposits, withdrawals, and transfer history
 
 ---
 
