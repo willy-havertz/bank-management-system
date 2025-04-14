@@ -21,6 +21,7 @@ The Bank Management System is a full-stack application designed to manage bankin
 ## Overview
 
 The Bank Management System is built to streamline banking operations by integrating user account management, transaction processing, and automated email notifications. With a robust backend and a user-friendly frontend, this application ensures scalability and ease-of-maintenance.
+https://bank-management-system-0udz.onrender.com/   paste the link in  youe web browser to get started
 
 ---
 
